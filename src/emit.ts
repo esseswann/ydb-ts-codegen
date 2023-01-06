@@ -1,6 +1,7 @@
+import { randomUUID } from "crypto";
 import ts, { Node } from "typescript";
 
-const emit = (filename: string, nodes: Node[]) => {
+const emit = (nodes: Node[], filename: string = randomUUID()) => {
   const resultFile = ts.createSourceFile(
     filename,
     "",

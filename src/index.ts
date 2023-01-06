@@ -3,19 +3,32 @@ import { Driver, Session, TypedValues, Types } from "ydb-sdk";
 import emit from "./emit";
 import getImports from "./getImports";
 import processFile from "./processFile";
+import glob from "tiny-glob";
+import path from "path";
+import { readFile } from "fs/promises";
 
 const IMPORTS = [TypedValues.name, Types.name, Driver.name, Session.name];
 
-const processFiles = (
-  name: string,
-  files: { name: string; content: string }[]
-) => {
+export const processFiles = (files: { name: string; content: string }[]) => {
   let result: Node[] = [];
   result = [getImports(IMPORTS, "ydb-sdk")];
   for (const file of files) {
     result = result.concat(...processFile(file.name, file.content));
   }
-  return emit(name, result);
+  return emit(result);
 };
 
-export default processFiles;
+export const processFolder = async (source: string) => {
+  const target = `${source}/**/*.sql`;
+  const filenames = await glob(target, {
+    absolute: true,
+    filesOnly: true,
+  });
+  const files = await Promise.all(
+    filenames.map(async (filename) => ({
+      name: path.parse(filename).name,
+      content: await readFile(filename, "utf-8"),
+    }))
+  );
+  return processFiles(files);
+};
