@@ -13,7 +13,7 @@ import {
   Types,
 } from "ydb-sdk";
 import { Variable } from "./extractVariables";
-import { QUERY_OPTIONS_NAME } from "./getQueryOptions";
+import { DEFAULT_QUERY_OPTIONS_NAME } from "./getQueryOptions";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
 const DRIVER_NAME = "driver";
@@ -22,6 +22,7 @@ const VARIABLES_NAME = "variables";
 const PAYLOAD_NAME = "payload";
 const RESULT_NAME = "result";
 const SQL_NAME = "sql";
+const QUERY_OPTIONS_NAME = "queryOptions";
 
 const getExecuteQueryDefinition = (
   name: string,
@@ -52,6 +53,26 @@ const getExecuteQueryDefinition = (
     );
     parameters.push(parameter);
   }
+  parameters.push(
+    factory.createParameterDeclaration(
+      undefined,
+      undefined,
+      factory.createIdentifier(QUERY_OPTIONS_NAME),
+      undefined,
+      factory.createIndexedAccessTypeNode(
+        factory.createTypeReferenceNode("Parameters", [
+          factory.createIndexedAccessTypeNode(
+            factory.createTypeReferenceNode(Session.name),
+            factory.createLiteralTypeNode(
+              factory.createStringLiteral("executeQuery")
+            )
+          ),
+        ]),
+        factory.createLiteralTypeNode(factory.createNumericLiteral("2"))
+      ),
+      factory.createIdentifier(DEFAULT_QUERY_OPTIONS_NAME)
+    )
+  );
   statements.push(getVariablesStatement(variables));
   statements.push(getConst(SQL_NAME, factory.createStringLiteral(sql)));
   const sessionHandler = getSessionHandler();

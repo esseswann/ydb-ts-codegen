@@ -1,6 +1,6 @@
 import { factory, NodeFlags } from "typescript";
 
-export const QUERY_OPTIONS_NAME = "queryOptions";
+export const DEFAULT_QUERY_OPTIONS_NAME = "defaultQueryOptions";
 
 const getQueryOptions = () => {
   const objectLiteral = factory.createObjectLiteralExpression(
@@ -19,7 +19,7 @@ const getQueryOptions = () => {
     true
   );
   const variableDeclaration = factory.createVariableDeclaration(
-    QUERY_OPTIONS_NAME,
+    DEFAULT_QUERY_OPTIONS_NAME,
     undefined,
     undefined,
     objectLiteral
