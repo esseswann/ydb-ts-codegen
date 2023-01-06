@@ -1,12 +1,11 @@
 import {
   factory,
-  InterfaceDeclaration,
   NodeFlags,
   ParameterDeclaration,
   Statement,
   SyntaxKind,
 } from "typescript";
-import { Driver, Session, TypedData, TypedValues, Types } from "ydb-sdk";
+import { Driver, Session, TypedValues, Types } from "ydb-sdk";
 import { Variable } from "./extractVariables";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
@@ -35,6 +34,7 @@ const getExecuteQueryDefinition = (
     factory.createTypeReferenceNode(Driver.name)
   );
   parameters.push(driverParmater);
+  const statements: Statement[] = [];
   if (variables.length) {
     const parameter = factory.createParameterDeclaration(
       undefined,
@@ -44,11 +44,12 @@ const getExecuteQueryDefinition = (
       factory.createTypeReferenceNode(variablesName)
     );
     parameters.push(parameter);
+    statements.push(getVariablesStatement(variables));
   }
-  const statements: Statement[] = [];
   statements.push(getConst(SQL_NAME, factory.createStringLiteral(sql)));
-  statements.push(getVariablesStatement(variables));
-  const sessionHandler = getSessionHandler();
+  const sessionHandler = variables.length
+    ? getSessionHandler(PAYLOAD_NAME)
+    : getSessionHandler();
   statements.push(sessionHandler);
   statements.push(
     getConst(
@@ -106,11 +107,11 @@ const getPropertyAssignment = (member: Variable) => {
   return factory.createPropertyAssignment(`$${name}`, handler);
 };
 
-const getSessionHandler = () => {
+const getSessionHandler = (payloadName?: string) => {
   const statments: Statement[] = [];
   const executeQuery = getFunctionCall(`${SESSION_NAME}.executeQuery`, [
     SQL_NAME,
-    PAYLOAD_NAME,
+    ...(payloadName ? [payloadName] : []),
   ]);
   statments.push(factory.createReturnStatement(executeQuery));
   return factory.createFunctionDeclaration(

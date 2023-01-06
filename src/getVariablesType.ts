@@ -8,12 +8,14 @@ const getProperty = (variable: Variable) =>
     undefined,
     variable.name,
     undefined,
-
-    factory.createTypeReferenceNode("Parameters", [
-      factory.createTypeReferenceNode(
-        `typeof ${TypedValues.name}.${variable.type.toLowerCase()}`
-      ),
-    ])
+    factory.createIndexedAccessTypeNode(
+      factory.createTypeReferenceNode("Parameters", [
+        factory.createTypeReferenceNode(
+          `typeof ${TypedValues.name}.${variable.type.toLowerCase()}`
+        ),
+      ]),
+      factory.createLiteralTypeNode(factory.createNumericLiteral("0"))
+    )
   );
 
 const getVariablesType = (name: string, variables: Variable[]) =>
