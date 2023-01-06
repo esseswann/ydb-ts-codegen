@@ -1,12 +1,12 @@
 import { factory } from "typescript";
-import { TypedValues } from "ydb-sdk";
+import { snakeToCamelCaseConversion, TypedValues } from "ydb-sdk";
 import type { Variable } from "./extractVariables";
 import { capitalizeFirstLetter } from "./utils";
 
 const getProperty = (variable: Variable) =>
   factory.createPropertySignature(
     undefined,
-    variable.name,
+    snakeToCamelCaseConversion.ydbToJs(variable.name),
     undefined,
     factory.createIndexedAccessTypeNode(
       factory.createTypeReferenceNode("Parameters", [

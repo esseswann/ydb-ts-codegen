@@ -5,7 +5,13 @@ import {
   Statement,
   SyntaxKind,
 } from "typescript";
-import { Driver, Session, TypedValues, Types } from "ydb-sdk";
+import {
+  Driver,
+  Session,
+  snakeToCamelCaseConversion,
+  TypedValues,
+  Types,
+} from "ydb-sdk";
 import { Variable } from "./extractVariables";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
@@ -101,7 +107,7 @@ const getPropertyAssignment = (member: Variable) => {
     `${TypedValues.name}.${TypedValues.fromNative.name}`,
     [
       `${Types.name}.${String(typeName).toUpperCase()}`,
-      `${VARIABLES_NAME}.${name}`,
+      `${VARIABLES_NAME}.${snakeToCamelCaseConversion.ydbToJs(name)}`,
     ]
   );
   return factory.createPropertyAssignment(`$${name}`, handler);
