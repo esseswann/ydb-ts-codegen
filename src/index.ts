@@ -2,6 +2,7 @@ import { Node } from "typescript";
 import { Driver, Session, TypedValues, Types } from "ydb-sdk";
 import emit from "./emit";
 import getImports from "./getImports";
+import getQueryOptions from "./getQueryOptions";
 import processFile from "./processFile";
 import glob from "tiny-glob";
 import path from "path";
@@ -11,7 +12,7 @@ const IMPORTS = [TypedValues.name, Types.name, Driver.name, Session.name];
 
 export const processFiles = (files: { name: string; content: string }[]) => {
   let result: Node[] = [];
-  result = [getImports(IMPORTS, "ydb-sdk")];
+  result = [getImports(IMPORTS, "ydb-sdk"), getQueryOptions()];
   for (const file of files) {
     result = result.concat(...processFile(file.name, file.content));
   }

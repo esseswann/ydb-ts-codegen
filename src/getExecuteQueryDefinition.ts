@@ -13,6 +13,7 @@ import {
   Types,
 } from "ydb-sdk";
 import { Variable } from "./extractVariables";
+import { QUERY_OPTIONS_NAME } from "./getQueryOptions";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
 const DRIVER_NAME = "driver";
@@ -50,13 +51,11 @@ const getExecuteQueryDefinition = (
       factory.createTypeReferenceNode(variablesName)
     );
     parameters.push(parameter);
-    statements.push(getVariablesStatement(variables));
   }
+  statements.push(getVariablesStatement(variables));
   statements.push(getConst(SQL_NAME, factory.createStringLiteral(sql)));
-  const sessionHandler = variables.length
-    ? getSessionHandler(PAYLOAD_NAME)
-    : getSessionHandler();
-  statements.push(sessionHandler);
+  const sessionHandler = getSessionHandler();
+  statements.push(getSessionHandler());
   statements.push(
     getConst(
       RESULT_NAME,
@@ -100,7 +99,6 @@ const getVariablesStatement = (variables: Variable[]): Statement => {
 };
 
 const getPropertyAssignment = (member: Variable) => {
-  // FIXME this is horrible
   const name = member.name;
   const typeName = member.type;
   const handler = getFunctionCall(
@@ -113,11 +111,12 @@ const getPropertyAssignment = (member: Variable) => {
   return factory.createPropertyAssignment(`$${name}`, handler);
 };
 
-const getSessionHandler = (payloadName?: string) => {
+const getSessionHandler = () => {
   const statments: Statement[] = [];
   const executeQuery = getFunctionCall(`${SESSION_NAME}.executeQuery`, [
     SQL_NAME,
-    ...(payloadName ? [payloadName] : []),
+    PAYLOAD_NAME,
+    QUERY_OPTIONS_NAME,
   ]);
   statments.push(factory.createReturnStatement(executeQuery));
   return factory.createFunctionDeclaration(
