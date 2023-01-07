@@ -1,5 +1,7 @@
 # ydb-ts-codegen
-Generates TypeScript queries from sql files. \
+Generates TypeScript queries from sql files.
+
+
 Given a file `user.sql`
 ```sql
 declare $user_id as Utf8;
