@@ -58,7 +58,7 @@ const getExecuteQueryDefinition = (
       undefined,
       undefined,
       factory.createIdentifier(QUERY_OPTIONS_NAME),
-      undefined,
+      factory.createToken(SyntaxKind.QuestionToken),
       factory.createIndexedAccessTypeNode(
         factory.createTypeReferenceNode("Parameters", [
           factory.createIndexedAccessTypeNode(
@@ -69,8 +69,8 @@ const getExecuteQueryDefinition = (
           ),
         ]),
         factory.createLiteralTypeNode(factory.createNumericLiteral("2"))
-      ),
-      factory.createIdentifier(DEFAULT_QUERY_OPTIONS_NAME)
+      )
+      // factory.createIdentifier(DEFAULT_QUERY_OPTIONS_NAME)
     )
   );
   statements.push(getVariablesStatement(variables));
