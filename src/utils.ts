@@ -1,4 +1,4 @@
-import { Expression, factory, NodeFlags, TypeNode } from "typescript";
+import { Expression, factory, NodeFlags } from "typescript";
 
 export function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

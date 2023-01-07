@@ -5,6 +5,7 @@
     "strict": true,
     "declaration": true,
     "esModuleInterop": true,
-    "target": "ES2022"
+    "target": "ES2022",
+    "moduleResolution": "node"
   }
 }

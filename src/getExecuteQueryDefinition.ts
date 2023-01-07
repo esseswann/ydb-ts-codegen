@@ -1,19 +1,18 @@
 import {
-  factory,
-  NodeFlags,
-  ParameterDeclaration,
-  Statement,
-  SyntaxKind,
+    factory,
+    NodeFlags,
+    ParameterDeclaration,
+    Statement,
+    SyntaxKind
 } from "typescript";
 import {
-  Driver,
-  Session,
-  snakeToCamelCaseConversion,
-  TypedValues,
-  Types,
+    Driver,
+    Session,
+    snakeToCamelCaseConversion,
+    TypedValues,
+    Types
 } from "ydb-sdk";
 import { Variable } from "./extractVariables";
-import { DEFAULT_QUERY_OPTIONS_NAME } from "./getQueryOptions";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
 const DRIVER_NAME = "driver";

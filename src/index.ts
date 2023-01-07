@@ -1,12 +1,12 @@
+import { readFile } from "fs/promises";
+import path from "path";
+import glob from "tiny-glob";
 import { Node } from "typescript";
 import { Driver, Session, TypedValues, Types } from "ydb-sdk";
 import emit from "./emit";
 import getImports from "./getImports";
 import getQueryOptions from "./getQueryOptions";
 import processFile from "./processFile";
-import glob from "tiny-glob";
-import path from "path";
-import { readFile } from "fs/promises";
 
 const IMPORTS = [TypedValues.name, Types.name, Driver.name, Session.name];
 
