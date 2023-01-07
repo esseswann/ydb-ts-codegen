@@ -5,6 +5,6 @@
     "strict": true,
     "declaration": true,
     "esModuleInterop": true,
-    "target": "ESNEXT"
+    "target": "ES2022"
   }
 }

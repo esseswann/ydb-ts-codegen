@@ -1,5 +1,4 @@
 import { Node } from "typescript";
-import emit from "./emit";
 import extractVariables from "./extractVariables";
 import getExecuteQueryDefinition from "./getExecuteQueryDefinition";
 import getVariablesType from "./getVariablesType";
