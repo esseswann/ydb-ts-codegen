@@ -16,7 +16,7 @@ interface UserVariables {
     userId: Parameters<typeof TypedValues.utf8>[0];
 }
 
-export function executeUser(variables: UserVariables, driver: Driver, queryOptions?: Parameters<Session["executeQuery"]>[2]) {
+export function executeUser(driver: Driver, variables: UserVariables, queryOptions?: Parameters<Session["executeQuery"]>[2]) {
     const payload = {
         user_id: variables.userId
     };
