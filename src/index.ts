@@ -2,7 +2,13 @@ import { readFile } from "fs/promises";
 import path from "path";
 import glob from "tiny-glob";
 import { Node } from "typescript";
-import { Driver, Session, TypedValues, Types } from "ydb-sdk";
+import {
+  Driver,
+  Session,
+  snakeToCamelCaseConversion,
+  TypedValues,
+  Types,
+} from "ydb-sdk";
 import emit from "./emit";
 import getImports from "./getImports";
 import getQueryOptions from "./getQueryOptions";
@@ -14,7 +20,11 @@ export const processFiles = (files: { name: string; content: string }[]) => {
   let result: Node[] = [];
   result = [getImports(IMPORTS, "ydb-sdk"), getQueryOptions()];
   for (const file of files) {
-    result = result.concat(...processFile(file.name, file.content));
+    const processedFile = processFile(
+      snakeToCamelCaseConversion.ydbToJs(file.name),
+      file.content
+    );
+    result = result.concat(...processedFile);
   }
   return emit(result);
 };
