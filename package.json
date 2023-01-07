@@ -1,5 +1,9 @@
 {
-  "prettier": {},
+  "name": "ydb-codegen",
+  "author": {
+    "email": "esseswann@gmail.com",
+    "name": "jsus"
+  },
   "dependencies": {
     "tiny-glob": "0.2.9",
     "ts-node": "10.9.1",
