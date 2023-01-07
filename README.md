@@ -30,6 +30,8 @@ export function executeUser(driver: Driver, variables: UserVariables, queryOptio
 ```
 so it can be used as 
 ```typescript
+import { executeUser } from './generated.ts'
+
 const result = executeUser(driver, { userId: 'id' })
 ```
 
