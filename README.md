@@ -18,7 +18,7 @@ interface UserVariables {
 
 export function executeUser(driver: Driver, variables: UserVariables, queryOptions?: Parameters<Session["executeQuery"]>[2]) {
     const payload = {
-        user_id: variables.userId
+        user_id: TypedValues.fromNative(Types.UTF8, variables.userId)
     };
     const sql = "declare $user_id as Utf8; \r\n select *\r\n  from `auth/user`\r\n where id = $user_id";
     async function sessionHandler(session: Session) {
