@@ -19,10 +19,5 @@
   },
   "peerDependencies": {
     "ydb-sdk": "3.*"
-  },
-  "overrides": {
-    "ydb-sdk": {
-      "pino": "latest"
-    }
   }
 }
