@@ -1,9 +1,15 @@
 {
   "name": "ydb-codegen",
+  "version": "0.0.1",
   "author": {
     "email": "esseswann@gmail.com",
     "name": "jsus"
   },
+  "scripts": {
+    "build": "rm -rf lib && tsc"
+  },
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "dependencies": {
     "tiny-glob": "0.2.9",
     "ts-node": "10.9.1",
@@ -11,6 +17,8 @@
     "ydb-sdk": "3.7.0"
   },
   "devDependencies": {
-    "@types/node": "18.11.18"
+    "@types/node": "18.11.18",
+    "esbuild": "0.16.15",
+    "esbuild-node-externals": "1.6.0"
   }
 }

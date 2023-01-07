@@ -1,0 +1,9 @@
+{
+  "include": ["./src/**/*"],
+  "compilerOptions": {
+    "outDir": "lib",
+    "strict": true,
+    "declaration": true, // generates declaration files
+    "esModuleInterop": true
+  }
+}
