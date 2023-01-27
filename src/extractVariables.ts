@@ -1,5 +1,5 @@
 const extractVariables = (sql: string): Variable[] => {
-  const matches = sql.matchAll(/declare \$(?<name>.*) as (?<type>.*);/g);
+  const matches = sql.matchAll(/declare \$(?<name>.*) as (?<type>.*);/gi);
   const result: Variable[] = [];
   for (const { groups } of matches) result.push(groups as Variable);
   return result;
