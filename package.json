@@ -1,6 +1,6 @@
 {
   "name": "ydb-codegen",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": {
     "email": "esseswann@gmail.com",
     "name": "jsus"
@@ -13,13 +13,9 @@
   "files": ["lib", "README.md"],
   "dependencies": {
     "tiny-glob": "0.2.9",
-    "typescript": "4.9.4"
-  },
-  "devDependencies": {
-    "@types/node": "18.11.18",
-    "@types/pino-pretty": "5.0.0"
+    "typescript": "4.9.5"
   },
   "peerDependencies": {
-    "ydb-sdk": "3.*"
+    "ydb-sdk": "4.*"
   }
 }
