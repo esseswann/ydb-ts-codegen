@@ -1,5 +1,4 @@
 import { Node } from "typescript";
-import { snakeToCamelCaseConversion } from "ydb-sdk";
 import extractVariables from "./extractVariables";
 import getExecuteQueryDefinition from "./getExecuteQueryDefinition";
 import getVariablesType from "./getVariablesType";
