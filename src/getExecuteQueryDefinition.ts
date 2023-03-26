@@ -1,4 +1,5 @@
 import {
+  CallExpression,
     factory,
     NodeFlags,
     ParameterDeclaration,
@@ -10,7 +11,8 @@ import {
     Session,
     snakeToCamelCaseConversion,
     TypedValues,
-    Types
+    Types,
+    withRetries
 } from "ydb-sdk";
 import { Variable } from "./extractVariables";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
@@ -131,6 +133,11 @@ const getPropertyAssignment = (member: Variable) => {
   return factory.createPropertyAssignment(`$${name}`, handler);
 };
 
+const getWithRetries = (expression: CallExpression) => {
+  const arrowFunction = factory.createArrowFunction(undefined, [], [], undefined, undefined, expression)
+  return factory.createCallExpression(factory.createIdentifier(withRetries.name), [], [arrowFunction])
+}
+
 const getSessionHandler = () => {
   const statments: Statement[] = [];
   const executeQuery = getFunctionCall(`${SESSION_NAME}.executeQuery`, [
@@ -138,7 +145,8 @@ const getSessionHandler = () => {
     PAYLOAD_NAME,
     QUERY_OPTIONS_NAME,
   ]);
-  statments.push(factory.createReturnStatement(executeQuery));
+  const withRetries = getWithRetries(executeQuery)
+  statments.push(factory.createReturnStatement(withRetries));
   return factory.createFunctionDeclaration(
     [factory.createToken(SyntaxKind.AsyncKeyword)],
     undefined,
