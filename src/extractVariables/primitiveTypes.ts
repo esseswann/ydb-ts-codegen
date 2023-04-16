@@ -59,7 +59,7 @@ const primitiveTypes: PrimitiveTypes = {
   [Ydb.Type.PrimitiveTypeId.DATE]: {
     typedValue: "date",
     type: "DATE",
-    native: "number",
+    native: "Date",
   },
   [Ydb.Type.PrimitiveTypeId.DATETIME]: {
     typedValue: "datetime",
