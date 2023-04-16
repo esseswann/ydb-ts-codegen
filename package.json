@@ -1,6 +1,10 @@
 {
   "name": "ydb-codegen",
   "version": "0.1.0",
+  "repository": {
+    "urL": "git+https://github.com/esseswann/ydb-ts-codegen.git",
+    "type": "git"
+  },
   "author": {
     "email": "esseswann@gmail.com",
     "name": "jsus"
