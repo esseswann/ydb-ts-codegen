@@ -32,7 +32,7 @@ function prepareComplexVariables(variables: ComplexVariables) {
         $optional_primitive: TypedValues.optional(TypedValues.datetime(variables.optionalPrimitive!)),
         $primitive: TypedValues.uint64(variables.primitive!),
         $list: TypedValues.list(Types.struct({
-            created_at: Types.DATETIME,
+            createdAt: Types.DATETIME,
             id: Types.UINT64,
             sublist: Types.list(Types.optional(Types.UINT64))
         }), variables.list!)

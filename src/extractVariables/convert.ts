@@ -102,7 +102,7 @@ const getStructType = (
   for (const member of type.members!)
     properties.push(
       factory.createPropertyAssignment(
-        member.name!,
+        snakeToCamelCaseConversion.ydbToJs(member.name!),
         getTypedValueCall(Variant.Type, member.type!, argument)
       )
     );
