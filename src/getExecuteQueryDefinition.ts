@@ -1,20 +1,12 @@
 import {
   CallExpression,
-    factory,
-    NodeFlags,
-    ParameterDeclaration,
-    Statement,
-    SyntaxKind
+  factory,
+  ParameterDeclaration,
+  Statement,
+  SyntaxKind,
 } from "typescript";
-import {
-    Driver,
-    Session,
-    snakeToCamelCaseConversion,
-    TypedValues,
-    Types,
-    withRetries
-} from "ydb-sdk";
-import { Variable } from "./extractVariables";
+import { Driver, Session, withRetries } from "ydb-sdk";
+import { Variables } from "./extractVariables";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
 const DRIVER_NAME = "driver";
@@ -28,8 +20,7 @@ const QUERY_OPTIONS_NAME = "queryOptions";
 const getExecuteQueryDefinition = (
   name: string,
   sql: string,
-  variablesName: string,
-  variables: Variable[]
+  variables: Variables | null
 ) => {
   const functionName = factory.createIdentifier(
     `execute${capitalizeFirstLetter(name)}`
@@ -44,13 +35,13 @@ const getExecuteQueryDefinition = (
   );
   parameters.push(driverParmater);
   const statements: Statement[] = [];
-  if (variables.length) {
+  if (variables) {
     const parameter = factory.createParameterDeclaration(
       undefined,
       undefined,
       factory.createIdentifier(VARIABLES_NAME),
       undefined,
-      factory.createTypeReferenceNode(variablesName)
+      factory.createTypeReferenceNode(variables.interface.name)
     );
     parameters.push(parameter);
   }
@@ -71,10 +62,14 @@ const getExecuteQueryDefinition = (
         ]),
         factory.createLiteralTypeNode(factory.createNumericLiteral("2"))
       )
-      // factory.createIdentifier(DEFAULT_QUERY_OPTIONS_NAME)
     )
   );
-  statements.push(getVariablesStatement(variables));
+  if (variables)
+    statements.push(getVariablesStatement(variables.converter.name!.text));
+  else
+    statements.push(
+      getConst(PAYLOAD_NAME, factory.createIdentifier("undefined"))
+    );
   statements.push(getConst(SQL_NAME, factory.createStringLiteral(sql)));
   const sessionHandler = getSessionHandler();
   statements.push(getSessionHandler());
@@ -91,52 +86,40 @@ const getExecuteQueryDefinition = (
   );
   const block = factory.createBlock(statements, true);
   return factory.createFunctionDeclaration(
-    [factory.createToken(SyntaxKind.ExportKeyword)],
+    undefined,
     undefined,
     functionName,
     undefined,
     parameters,
     undefined,
-    // factory.createTypeReferenceNode(TypedData.name),
     block
   );
 };
 
-const getVariablesStatement = (variables: Variable[]): Statement => {
-  const objectLiteral = factory.createObjectLiteralExpression(
-    variables.map(getPropertyAssignment),
-    true
-  );
-  const variableDeclaration = factory.createVariableDeclaration(
-    PAYLOAD_NAME,
+const getVariablesStatement = (converterName: string) => {
+  const functionCall = factory.createCallExpression(
+    factory.createIdentifier(converterName),
     undefined,
-    undefined,
-    objectLiteral
+    [factory.createIdentifier(VARIABLES_NAME)]
   );
-  const declarationsList = factory.createVariableDeclarationList(
-    [variableDeclaration],
-    NodeFlags.Const
-  );
-  return factory.createVariableStatement(undefined, declarationsList);
-};
-
-const getPropertyAssignment = (member: Variable) => {
-  const name = member.name;
-  const typeName = member.type;
-  const handler = getFunctionCall(
-    `${TypedValues.name}.${TypedValues.fromNative.name}`,
-    [
-      `${Types.name}.${String(typeName).toUpperCase()}`,
-      `${VARIABLES_NAME}.${snakeToCamelCaseConversion.ydbToJs(name)}`,
-    ]
-  );
-  return factory.createPropertyAssignment(`$${name}`, handler);
+  return getConst(PAYLOAD_NAME, functionCall);
 };
 
 const getWithRetries = (expression: CallExpression) => {
-  const arrowFunction = factory.createArrowFunction(undefined, [], [], undefined, undefined, expression)
-  return factory.createCallExpression(factory.createIdentifier(withRetries.name), [], [arrowFunction])
-}
+  const arrowFunction = factory.createArrowFunction(
+    undefined,
+    [],
+    [],
+    undefined,
+    undefined,
+    expression
+  );
+  return factory.createCallExpression(
+    factory.createIdentifier(withRetries.name),
+    [],
+    [arrowFunction]
+  );
+};
 
 const getSessionHandler = () => {
   const statments: Statement[] = [];
@@ -145,7 +128,7 @@ const getSessionHandler = () => {
     PAYLOAD_NAME,
     QUERY_OPTIONS_NAME,
   ]);
-  const withRetries = getWithRetries(executeQuery)
+  const withRetries = getWithRetries(executeQuery);
   statments.push(factory.createReturnStatement(withRetries));
   return factory.createFunctionDeclaration(
     [factory.createToken(SyntaxKind.AsyncKeyword)],

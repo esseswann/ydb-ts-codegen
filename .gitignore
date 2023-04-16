@@ -1,2 +1,5 @@
 node_modules
 lib
+tests
+.env
+authorized_key.json

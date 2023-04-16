@@ -7,6 +7,10 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "target": "ES2022",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true
   }
 }
