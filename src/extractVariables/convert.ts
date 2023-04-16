@@ -59,8 +59,9 @@ const getContainerType: Handler<Ydb.IType> = (
   type,
   argument
 ): ts.CallExpression => {
-  if (type.listType) return getListType(type.listType, argument);
-  if (type.optionalType) return getOptionalType(type.optionalType, argument);
+  if (type.listType) return getListType(variant, type.listType, argument);
+  if (type.optionalType)
+    return getOptionalType(variant, type.optionalType, argument);
   if (type.structType) return getStructType(variant, type.structType, argument);
   // if (type.variantType) return getVariantType(type.variantType);
   return factory.createCallExpression(
@@ -71,26 +72,24 @@ const getContainerType: Handler<Ydb.IType> = (
 };
 
 const getListType = (
+  variant: Variant,
   type: Ydb.IListType,
   argument: ts.PropertyAccessExpression
 ) => {
-  const functionName = getPropertyAccess(Variant.TypedValue, "list");
+  const functionName = getPropertyAccess(variant, "list");
   const subType = getTypedValueCall(Variant.Type, type.item!, argument);
-  return factory.createCallExpression(functionName, undefined, [
-    subType,
-    argument,
-  ]);
+  const args = [subType];
+  if (variant === Variant.TypedValue) args.push(argument);
+  return factory.createCallExpression(functionName, undefined, args);
 };
 
 const getOptionalType = (
+  variant: Variant,
   type: Ydb.IOptionalType,
   argument: ts.PropertyAccessExpression
 ) => {
-  const functionName = factory.createPropertyAccessExpression(
-    factory.createIdentifier(TypedValues.name),
-    snakeToCamelCaseConversion.ydbToJs("optional")
-  );
-  const subType = getTypedValueCall(Variant.TypedValue, type.item!, argument);
+  const functionName = getPropertyAccess(variant, "optional");
+  const subType = getTypedValueCall(variant, type.item!, argument);
   return factory.createCallExpression(functionName, undefined, [subType]);
 };
 
@@ -120,25 +119,21 @@ const getStructType = (
 const getPrimitivePropertyAccess = (
   variant: Variant,
   type: Ydb.IType
-): ts.PropertyAccessExpression => {
-  let method = primitiveTypes[type.typeId!][
-    variant === Variant.Type ? "type" : "typedValue"
-  ] as string;
-  return getPropertyAccess(variant, method);
-};
+): ts.PropertyAccessExpression =>
+  getPropertyAccess(variant, primitiveTypes[type.typeId!][variant]);
 
 const getPropertyAccess = (variant: Variant, method: string) => {
   const identifier =
     variant === Variant.TypedValue ? TypedValues.name : Types.name;
   return factory.createPropertyAccessExpression(
     factory.createIdentifier(identifier),
-    snakeToCamelCaseConversion.ydbToJs(method)
+    method
   );
 };
 
 enum Variant {
-  TypedValue,
-  Type,
+  TypedValue = "typedValue",
+  Type = "type",
 }
 
 type Handler<T extends Ydb.Type | any> = (
