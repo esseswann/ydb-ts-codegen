@@ -21,7 +21,7 @@ export interface ComplexVariables {
     optionalPrimitive?: Date;
     primitive: number;
     list: {
-        createdAt: Date;
+        created_at: Date;
         id: number;
         sublist: number[];
     }[];
@@ -32,7 +32,7 @@ function prepareComplexVariables(variables: ComplexVariables) {
         $optional_primitive: TypedValues.optional(TypedValues.datetime(variables.optionalPrimitive!)),
         $primitive: TypedValues.uint64(variables.primitive!),
         $list: TypedValues.list(Types.struct({
-            createdAt: Types.DATETIME,
+            created_at: Types.DATETIME,
             id: Types.UINT64,
             sublist: Types.list(Types.optional(Types.UINT64))
         }), variables.list!)

@@ -18,10 +18,12 @@ const createInterface = (name: string) => {
   };
 };
 
-const getType = (key: string, type: Ydb.IType) =>
+const getType = (key: string, type: Ydb.IType, convert: boolean = true) =>
   factory.createPropertySignature(
     undefined,
-    snakeToCamelCaseConversion.ydbToJs(key),
+    convert // FIXME should be something better
+      ? snakeToCamelCaseConversion.ydbToJs(key)
+      : key,
     ...getOptionalType(type)
   );
 
@@ -59,7 +61,7 @@ const getListType = (type: Ydb.IListType): ts.ArrayTypeNode =>
 const getStructType = (type: Ydb.IStructType): ts.TypeNode => {
   const members: ts.PropertySignature[] = [];
   for (const member of type.members!)
-    members.push(getType(member.name!, member.type!));
+    members.push(getType(member.name!, member.type!, false));
   const objectLiteral = factory.createTypeLiteralNode(members);
   return objectLiteral;
 };
