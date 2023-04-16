@@ -61,7 +61,7 @@ const getListType = (type: Ydb.IListType): ts.ArrayTypeNode =>
 const getStructType = (type: Ydb.IStructType): ts.TypeNode => {
   const members: ts.PropertySignature[] = [];
   for (const member of type.members!)
-    members.push(getType(member.name!, member.type!, false));
+    members.push(getType(member.name!, member.type!, false)); // FIXME
   const objectLiteral = factory.createTypeLiteralNode(members);
   return objectLiteral;
 };
