@@ -49,6 +49,7 @@ const getContainerType = (type: Ydb.IType): ts.TypeNode => {
   if (type.variantType) return factory.createTypeReferenceNode("null");
   if (type.structType) return getStructType(type.structType);
   if (type.variantType) return getVariantType(type.variantType);
+  if (type.optionalType) return getOptionalType(type)[1]; // FIXME
   return factory.createTypeReferenceNode("any");
 };
 
