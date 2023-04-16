@@ -1,28 +1,34 @@
+import ts from "typescript";
 import { Driver } from "ydb-sdk";
+import createConvert from "./convert";
 import createInterface from "./interface";
 
-const extractVariables = async (sql: string, driver: Driver) => {
+const extractVariables = async (
+  sql: string,
+  driver: Driver
+): Promise<Variables | null> => {
   const response = await driver.tableClient.withSession((session) =>
     session.prepareQuery(sql)
   );
+  if (!Object.entries(response.parametersTypes).length) return null;
   const interfaceType = createInterface("Variables");
+  const convertFunction = createConvert("Variables");
   for (const key in response.parametersTypes) {
     const element = response.parametersTypes[key];
     interfaceType.append(key, element);
+    convertFunction.append(key, element);
   }
-  const matches = sql.matchAll(/declare \$(?<name>.*) as (?<type>.*);/gi);
-  const result: Variable[] = [];
-  for (const { groups } of matches) result.push(groups as Variable);
   return {
     name: "Variables",
     interface: interfaceType.get(),
-    typehandler: "",
+    converter: convertFunction.get(),
   };
 };
 
-export type Variable = {
+export type Variables = {
   name: string;
-  type: string;
+  interface: ts.InterfaceDeclaration;
+  converter: ts.FunctionDeclaration;
 };
 
 export default extractVariables;

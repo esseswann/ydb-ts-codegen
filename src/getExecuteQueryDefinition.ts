@@ -1,20 +1,11 @@
 import {
   CallExpression,
   factory,
-  NodeFlags,
   ParameterDeclaration,
   Statement,
   SyntaxKind,
 } from "typescript";
-import {
-  Driver,
-  Session,
-  snakeToCamelCaseConversion,
-  TypedValues,
-  Types,
-  withRetries,
-} from "ydb-sdk";
-import { Variable } from "./extractVariables";
+import { Driver, Session, withRetries } from "ydb-sdk";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
 const DRIVER_NAME = "driver";
@@ -28,8 +19,7 @@ const QUERY_OPTIONS_NAME = "queryOptions";
 const getExecuteQueryDefinition = (
   name: string,
   sql: string,
-  variablesName: string
-  // variables: Variable[]
+  variablesName?: string
 ) => {
   const functionName = factory.createIdentifier(
     `execute${capitalizeFirstLetter(name)}`
@@ -44,16 +34,16 @@ const getExecuteQueryDefinition = (
   );
   parameters.push(driverParmater);
   const statements: Statement[] = [];
-  // if (variables.length) {
-  //   const parameter = factory.createParameterDeclaration(
-  //     undefined,
-  //     undefined,
-  //     factory.createIdentifier(VARIABLES_NAME),
-  //     undefined,
-  //     factory.createTypeReferenceNode(variablesName)
-  //   );
-  //   parameters.push(parameter);
-  // }
+  if (variablesName) {
+    const parameter = factory.createParameterDeclaration(
+      undefined,
+      undefined,
+      factory.createIdentifier(VARIABLES_NAME),
+      undefined,
+      factory.createTypeReferenceNode(variablesName)
+    );
+    parameters.push(parameter);
+  }
   parameters.push(
     factory.createParameterDeclaration(
       undefined,
@@ -102,36 +92,36 @@ const getExecuteQueryDefinition = (
   );
 };
 
-const getVariablesStatement = (variables: Variable[]): Statement => {
-  const objectLiteral = factory.createObjectLiteralExpression(
-    variables.map(getPropertyAssignment),
-    true
-  );
-  const variableDeclaration = factory.createVariableDeclaration(
-    PAYLOAD_NAME,
-    undefined,
-    undefined,
-    objectLiteral
-  );
-  const declarationsList = factory.createVariableDeclarationList(
-    [variableDeclaration],
-    NodeFlags.Const
-  );
-  return factory.createVariableStatement(undefined, declarationsList);
-};
+// const getVariablesStatement = (variables: Variable[]): Statement => {
+//   const objectLiteral = factory.createObjectLiteralExpression(
+//     variables.map(getPropertyAssignment),
+//     true
+//   );
+//   const variableDeclaration = factory.createVariableDeclaration(
+//     PAYLOAD_NAME,
+//     undefined,
+//     undefined,
+//     objectLiteral
+//   );
+//   const declarationsList = factory.createVariableDeclarationList(
+//     [variableDeclaration],
+//     NodeFlags.Const
+//   );
+//   return factory.createVariableStatement(undefined, declarationsList);
+// };
 
-const getPropertyAssignment = (member: Variable) => {
-  const name = member.name;
-  const typeName = member.type;
-  const handler = getFunctionCall(
-    `${TypedValues.name}.${TypedValues.fromNative.name}`,
-    [
-      `${Types.name}.${String(typeName).toUpperCase()}`,
-      `${VARIABLES_NAME}.${snakeToCamelCaseConversion.ydbToJs(name)}`,
-    ]
-  );
-  return factory.createPropertyAssignment(`$${name}`, handler);
-};
+// const getPropertyAssignment = (member: Variable) => {
+//   const name = member.name;
+//   const typeName = member.type;
+//   const handler = getFunctionCall(
+//     `${TypedValues.name}.${TypedValues.fromNative.name}`,
+//     [
+//       `${Types.name}.${String(typeName).toUpperCase()}`,
+//       `${VARIABLES_NAME}.${snakeToCamelCaseConversion.ydbToJs(name)}`,
+//     ]
+//   );
+//   return factory.createPropertyAssignment(`$${name}`, handler);
+// };
 
 const getWithRetries = (expression: CallExpression) => {
   const arrowFunction = factory.createArrowFunction(

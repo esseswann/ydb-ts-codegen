@@ -10,10 +10,13 @@ const processFile = async (name: string, sql: string, driver: Driver) => {
   const functionDefintion = getExecuteQueryDefinition(
     name,
     sql,
-    variables.name
-    // variables
+    variables ? variables.name : undefined
   );
-  if (variables.interface) result.push(variables.interface);
+
+  if (variables) {
+    result.push(variables.interface);
+    result.push(variables.converter);
+  }
   result.push(functionDefintion);
   return result;
 };
