@@ -61,10 +61,13 @@ const getExecuteQueryDefinition = (
         ]),
         factory.createLiteralTypeNode(factory.createNumericLiteral("2"))
       )
-      // factory.createIdentifier(DEFAULT_QUERY_OPTIONS_NAME)
     )
   );
-  // statements.push(getVariablesStatement(variables));
+  if (variablesName) statements.push(getVariablesStatement(variablesName));
+  else
+    statements.push(
+      getConst(PAYLOAD_NAME, factory.createIdentifier("undefined"))
+    );
   statements.push(getConst(SQL_NAME, factory.createStringLiteral(sql)));
   const sessionHandler = getSessionHandler();
   statements.push(getSessionHandler());
@@ -87,41 +90,18 @@ const getExecuteQueryDefinition = (
     undefined,
     parameters,
     undefined,
-    // factory.createTypeReferenceNode(TypedData.name),
     block
   );
 };
 
-// const getVariablesStatement = (variables: Variable[]): Statement => {
-//   const objectLiteral = factory.createObjectLiteralExpression(
-//     variables.map(getPropertyAssignment),
-//     true
-//   );
-//   const variableDeclaration = factory.createVariableDeclaration(
-//     PAYLOAD_NAME,
-//     undefined,
-//     undefined,
-//     objectLiteral
-//   );
-//   const declarationsList = factory.createVariableDeclarationList(
-//     [variableDeclaration],
-//     NodeFlags.Const
-//   );
-//   return factory.createVariableStatement(undefined, declarationsList);
-// };
-
-// const getPropertyAssignment = (member: Variable) => {
-//   const name = member.name;
-//   const typeName = member.type;
-//   const handler = getFunctionCall(
-//     `${TypedValues.name}.${TypedValues.fromNative.name}`,
-//     [
-//       `${Types.name}.${String(typeName).toUpperCase()}`,
-//       `${VARIABLES_NAME}.${snakeToCamelCaseConversion.ydbToJs(name)}`,
-//     ]
-//   );
-//   return factory.createPropertyAssignment(`$${name}`, handler);
-// };
+const getVariablesStatement = (converterName: string) => {
+  const functionCall = factory.createCallExpression(
+    factory.createIdentifier(`prepare${converterName}`),
+    undefined,
+    [factory.createIdentifier(VARIABLES_NAME)]
+  );
+  return getConst(PAYLOAD_NAME, functionCall);
+};
 
 const getWithRetries = (expression: CallExpression) => {
   const arrowFunction = factory.createArrowFunction(
