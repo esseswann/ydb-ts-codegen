@@ -34,7 +34,7 @@ const createConvert = (name: string) => {
 const getType = (key: string, type: Ydb.IType): ts.PropertyAssignment => {
   const targetValue = factory.createPropertyAccessExpression(
     factory.createIdentifier(PARAMETER_NAME),
-    snakeToCamelCaseConversion.ydbToJs(key)
+    `${snakeToCamelCaseConversion.ydbToJs(key)}!` // FIXME
   );
   return factory.createPropertyAssignment(
     key,

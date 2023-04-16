@@ -86,7 +86,7 @@ const getExecuteQueryDefinition = (
   );
   const block = factory.createBlock(statements, true);
   return factory.createFunctionDeclaration(
-    [factory.createToken(SyntaxKind.ExportKeyword)],
+    undefined,
     undefined,
     functionName,
     undefined,
