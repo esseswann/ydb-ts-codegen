@@ -20,7 +20,7 @@ const createConvert = (name: string) => {
             undefined,
             PARAMETER_NAME,
             undefined,
-            factory.createTypeReferenceNode("Variables", undefined),
+            factory.createTypeReferenceNode(name, undefined),
             undefined
           ),
         ],

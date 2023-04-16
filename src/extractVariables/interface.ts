@@ -1,6 +1,5 @@
 import ts, { factory, QuestionToken, SyntaxKind } from "typescript";
 import { snakeToCamelCaseConversion, Ydb } from "ydb-sdk";
-import { capitalizeFirstLetter } from "../utils";
 import primitiveTypes from "./primitiveTypes";
 
 const createInterface = (name: string) => {
@@ -11,7 +10,7 @@ const createInterface = (name: string) => {
     get: () =>
       factory.createInterfaceDeclaration(
         [factory.createToken(SyntaxKind.ExportKeyword)],
-        capitalizeFirstLetter(name),
+        name,
         undefined,
         undefined,
         properties

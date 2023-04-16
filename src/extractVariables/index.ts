@@ -1,9 +1,11 @@
 import ts from "typescript";
 import { Driver } from "ydb-sdk";
+import { capitalizeFirstLetter } from "../utils";
 import createConvert from "./convert";
 import createInterface from "./interface";
 
 const extractVariables = async (
+  name: string,
   sql: string,
   driver: Driver
 ): Promise<Variables | null> => {
@@ -11,22 +13,21 @@ const extractVariables = async (
     session.prepareQuery(sql)
   );
   if (!Object.entries(response.parametersTypes).length) return null;
-  const interfaceType = createInterface("Variables");
-  const convertFunction = createConvert("Variables");
+  const preparedName = capitalizeFirstLetter(name);
+  const interfaceType = createInterface(preparedName);
+  const convertFunction = createConvert(preparedName);
   for (const key in response.parametersTypes) {
     const element = response.parametersTypes[key];
     interfaceType.append(key, element);
     convertFunction.append(key, element);
   }
   return {
-    name: "Variables",
     interface: interfaceType.get(),
     converter: convertFunction.get(),
   };
 };
 
 export type Variables = {
-  name: string;
   interface: ts.InterfaceDeclaration;
   converter: ts.FunctionDeclaration;
 };

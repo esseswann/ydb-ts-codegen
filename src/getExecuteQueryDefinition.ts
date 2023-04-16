@@ -6,6 +6,7 @@ import {
   SyntaxKind,
 } from "typescript";
 import { Driver, Session, withRetries } from "ydb-sdk";
+import { Variables } from "./extractVariables";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
 const DRIVER_NAME = "driver";
@@ -19,7 +20,7 @@ const QUERY_OPTIONS_NAME = "queryOptions";
 const getExecuteQueryDefinition = (
   name: string,
   sql: string,
-  variablesName?: string
+  variables: Variables | null
 ) => {
   const functionName = factory.createIdentifier(
     `execute${capitalizeFirstLetter(name)}`
@@ -34,13 +35,13 @@ const getExecuteQueryDefinition = (
   );
   parameters.push(driverParmater);
   const statements: Statement[] = [];
-  if (variablesName) {
+  if (variables) {
     const parameter = factory.createParameterDeclaration(
       undefined,
       undefined,
       factory.createIdentifier(VARIABLES_NAME),
       undefined,
-      factory.createTypeReferenceNode(variablesName)
+      factory.createTypeReferenceNode(variables.interface.name)
     );
     parameters.push(parameter);
   }
@@ -63,7 +64,8 @@ const getExecuteQueryDefinition = (
       )
     )
   );
-  if (variablesName) statements.push(getVariablesStatement(variablesName));
+  if (variables)
+    statements.push(getVariablesStatement(variables.converter.name!.text));
   else
     statements.push(
       getConst(PAYLOAD_NAME, factory.createIdentifier("undefined"))
@@ -96,7 +98,7 @@ const getExecuteQueryDefinition = (
 
 const getVariablesStatement = (converterName: string) => {
   const functionCall = factory.createCallExpression(
-    factory.createIdentifier(`prepare${converterName}`),
+    factory.createIdentifier(converterName),
     undefined,
     [factory.createIdentifier(VARIABLES_NAME)]
   );
