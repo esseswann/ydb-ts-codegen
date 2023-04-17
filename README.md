@@ -54,7 +54,7 @@ export default executeComplex;
 
 ## Usage
 Work very much in progress, but we use it in production. \
-Here is an example on how to use the library. Notice that it's important to pass connection to the database, because this is how it finds out about input (and in the future output) types
+Here is an example on how to use the library. Notice that it's important to pass connection to the database, because this is how it finds out about input (and in the future output) types. It's recommended to use `IamAuthService()` but you can also try `getCredentialsFromEnv()`
 ```typescript
 import dotenv from "dotenv";
 import { writeFile } from "fs/promises";
