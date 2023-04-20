@@ -1,7 +1,7 @@
-function* sex(str: Token[]): Generator<Output> {
+function* sex(str: string): Generator<Output> {
   let atom = "";
   for (const token of str) {
-    switch (token) {
+    switch (token as Token) {
       case "(":
         yield { type: "start" };
         break;
@@ -24,7 +24,7 @@ function* sex(str: Token[]): Generator<Output> {
 
 export type Token = "(" | ")" | " " | "'" | "\n" | "\r" | "\t";
 
-type Output =
+export type Output =
   | {
       type: "start";
     }
