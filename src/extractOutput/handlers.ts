@@ -4,21 +4,21 @@ const handlers: Handlers<Accumulator> = {
   KqpTxResultBinding(context) {
     let value: any;
     return {
-      append: (atom) => !value && (value = atom),
+      append: (atom) => !value && (value = context.variables.get(atom) || atom),
       build: () => context.results.push(value),
     };
   },
-  DataType() {
+  DataType(context) {
     let type: string;
     return {
-      append: (atom) => (type = atom),
+      append: (atom) => (type = context.variables.get(atom) || atom),
       build: () => type,
     };
   },
-  ListType() {
+  ListType(context) {
     const list: any[] = [];
     return {
-      append: (atom) => list.push(atom),
+      append: (atom) => list.push(context.variables.get(atom) || atom),
       build: () => list,
     };
   },
@@ -27,7 +27,7 @@ const handlers: Handlers<Accumulator> = {
     let value: any;
     return {
       append: (atom) => {
-        if (binding) value = atom;
+        if (binding) value = context.variables.get(atom) || atom;
         else binding = atom;
       },
       build: () => {
