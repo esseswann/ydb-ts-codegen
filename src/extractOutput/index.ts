@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Driver } from "ydb-sdk";
-import parseSex, { Token } from "./sex";
+import parseSex from "./plex";
 
 const extractOutput = async (name: string, sql: string, driver: Driver) => {
   const { queryAst, queryPlan } = await driver.tableClient.withSession(
@@ -23,7 +23,7 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
   //     console.log(output[output.length - 1]);
   //   }
   // }
-  console.log(parseSex(queryAst as unknown as Token[], 0));
+  console.log(parseSex(queryAst));
   console.log(queryAst);
   // console.log(queryAst.match(/\(KqpTxResultBinding.*\)/)?.[0]);
 };

@@ -1,59 +1,42 @@
-export type Token = "(" | ")" | " " | "'";
-
-const parseSex = (str: Token[], current = 0): number => {
-  let handler = undefined;
-  let symbol = "";
-  for (let i = current + 1; i < str.length; i++) {
-    const token = str[i];
+function* sex(str: Token[]): Generator<Output> {
+  let index = 0;
+  let atom = "";
+  while (index < str.length) {
+    const token = str[index];
     switch (token) {
       case "(":
-        i = parseSex(str, i);
+        yield { type: "start" };
         break;
       case ")":
-        if (symbol) {
-          const nextHandler = handlers.get(symbol);
-          if (nextHandler) handler = nextHandler();
-          else if (handler) handler.append(symbol);
-        }
-        return i;
       case " ":
-        if (symbol) {
-          const nextHandler = handlers.get(symbol);
-          if (nextHandler) handler = nextHandler();
-          else if (handler) handler.append(symbol);
-        }
-        symbol = "";
+        if (atom) yield { type: "atom", value: atom };
+        atom = "";
+        if (token === ")") yield { type: "end" };
         break;
       case "'":
-        continue;
+      case "\n":
+      case "\r":
+      case "\t":
+        break;
       default:
-        symbol += token;
+        atom += token;
     }
+    index += 1;
   }
-  if (handler) console.log(handler.build);
-  return current;
-};
+}
 
-const handlersRaw: Record<string, Handler> = {
-  let: () => {
-    const result: Record<string, boolean> = {};
-    return {
-      append(symbol) {
-        console.log(symbol);
-        result[symbol] = true;
-      },
-      build() {
-        return result;
-      },
+export type Token = "(" | ")" | " " | "'" | "\n" | "\r" | "\t";
+
+type Output =
+  | {
+      type: "start";
+    }
+  | {
+      type: "atom";
+      value: string;
+    }
+  | {
+      type: "end";
     };
-  },
-};
 
-const handlers: Map<string, Handler> = new Map(Object.entries(handlersRaw));
-
-type Handler = () => {
-  append: (symbol: string) => void;
-  build: () => void;
-};
-
-export default parseSex;
+export default sex;
