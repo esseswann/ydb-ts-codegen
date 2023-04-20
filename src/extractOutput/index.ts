@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Driver } from "ydb-sdk";
-import parseSex from "./plex";
+import handlers from "./handlers";
+import stackedParse from "./stacks";
 
 const extractOutput = async (name: string, sql: string, driver: Driver) => {
   const { queryAst, queryPlan } = await driver.tableClient.withSession(
@@ -23,8 +24,9 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
   //     console.log(output[output.length - 1]);
   //   }
   // }
-  console.log(parseSex(queryAst));
-  console.log(queryAst);
+  const accumulator = { variables: new Map(), results: [] };
+  stackedParse(queryAst, handlers, accumulator);
+  console.log(accumulator);
   // console.log(queryAst.match(/\(KqpTxResultBinding.*\)/)?.[0]);
 };
 
