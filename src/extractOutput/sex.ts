@@ -1,8 +1,6 @@
 function* sex(str: Token[]): Generator<Output> {
-  let index = 0;
   let atom = "";
-  while (index < str.length) {
-    const token = str[index];
+  for (const token of str) {
     switch (token) {
       case "(":
         yield { type: "start" };
@@ -21,7 +19,6 @@ function* sex(str: Token[]): Generator<Output> {
       default:
         atom += token;
     }
-    index += 1;
   }
 }
 
