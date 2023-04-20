@@ -9,10 +9,10 @@ const parseSex = (str: Token[], current = 0): number => {
         i = parseSex(str, i);
         break;
       case ")":
-        processSymbol(symbol);
+        if (symbol) processSymbol(symbol);
         return i;
       case " ":
-        processSymbol(symbol);
+        if (symbol) processSymbol(symbol);
         symbol = "";
         break;
       case "'":
