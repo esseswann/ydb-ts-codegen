@@ -24,7 +24,7 @@
     "typescript": "5.0.4"
   },
   "peerDependencies": {
-    "ydb-sdk": "4.*"
+    "ydb-sdk": "^4.4"
   },
   "devDependencies": {
     "dotenv": "16.0.3",
