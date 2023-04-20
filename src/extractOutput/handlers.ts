@@ -1,28 +1,35 @@
 import { Handlers } from "./stacks";
 
-const handlers: Handlers<Accumulator> = {
-  KqpTxResultBinding(context) {
+const handlers = (context: Accumulator): Handlers => ({
+  KqpTxResultBinding() {
     let value: any;
     return {
       append: (atom) => !value && (value = context.variables.get(atom) || atom),
       build: () => context.results.push(value),
     };
   },
-  DataType(context) {
+  StructType() {
+    const struct: Record<string, any> = {};
+    return {
+      append: console.log,
+      build: () => struct,
+    };
+  },
+  DataType() {
     let type: string;
     return {
       append: (atom) => (type = context.variables.get(atom) || atom),
       build: () => type,
     };
   },
-  ListType(context) {
+  ListType() {
     const list: any[] = [];
     return {
       append: (atom) => list.push(context.variables.get(atom) || atom),
       build: () => list,
     };
   },
-  let(context) {
+  let() {
     let binding: string;
     let value: any;
     return {
@@ -35,9 +42,9 @@ const handlers: Handlers<Accumulator> = {
       },
     };
   },
-};
+});
 
-type Accumulator = {
+export type Accumulator = {
   variables: Map<string, any>;
   results: any[];
 };

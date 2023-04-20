@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Driver } from "ydb-sdk";
-import handlers from "./handlers";
+import handlers, { Accumulator } from "./handlers";
 import stackedParse from "./stacks";
 
 const extractOutput = async (name: string, sql: string, driver: Driver) => {
@@ -24,9 +24,10 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
   //     console.log(output[output.length - 1]);
   //   }
   // }
-  const accumulator = { variables: new Map(), results: [] };
-  stackedParse(queryAst, handlers, accumulator);
+  const accumulator: Accumulator = { variables: new Map(), results: [] };
+  stackedParse(queryAst, handlers(accumulator));
   console.log(accumulator);
+  console.log(queryAst);
   // console.log(queryAst.match(/\(KqpTxResultBinding.*\)/)?.[0]);
 };
 
