@@ -1,16 +1,21 @@
 import sex from "./sex";
 
-const stackedParse = <Accumulator>(str: string, handlers: Handlers) => {
+const stackedParse = (str: string, getHandler: GetHandler) => {
   const stack: (Handler | undefined)[] = [];
+  let isInit = true;
   for (const iterator of sex(str)) {
     const handler = stack[stack.length - 1];
     switch (iterator.type) {
       case "start":
+        isInit = true;
         stack.push(undefined);
         break;
       case "atom":
         if (handler) handler.append(iterator.value);
-        else stack[stack.length - 1] = handlers[iterator.value]?.();
+        else if (isInit) {
+          isInit = false;
+          stack[stack.length - 1] = getHandler?.(iterator.value);
+        }
         break;
       case "end":
         stack.pop();
@@ -20,11 +25,11 @@ const stackedParse = <Accumulator>(str: string, handlers: Handlers) => {
   }
 };
 
-type GetHandler = () => Handler;
-type Handler = {
-  append(atom: string): void;
+export type GetHandler = (atom: string) => Handler | undefined;
+export type Handler = {
+  append(atom: any): void;
   build(): any;
 };
-export type Handlers = Record<string, GetHandler>;
+// export type Handlers = Record<string, GetHandler>;
 
 export default stackedParse;
