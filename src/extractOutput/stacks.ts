@@ -26,7 +26,7 @@ const stackedParse = (str: string, getHandler: GetHandler) => {
 };
 
 export type GetHandler = (atom: string) => Handler | undefined;
-export type Handler = {
+export type Handler<T = unknown> = {
   append(atom: any): void;
   build(): any;
 };
