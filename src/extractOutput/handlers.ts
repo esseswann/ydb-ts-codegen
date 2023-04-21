@@ -4,7 +4,21 @@ const getHandler =
   (context: Accumulator): GetHandler =>
   (symbol) => {
     if (symbol.startsWith('"')) return keyValue(context, symbol);
-    return handlers[symbol]?.(context);
+    const handler = handlers[symbol]?.(context);
+    if (handler)
+      return {
+        append: (atom: unknown) => {
+          if (
+            typeof atom === "string" &&
+            atom.startsWith("&") &&
+            context.variables.has(atom)
+          )
+            atom = context.variables.get(atom);
+          handler.append(atom);
+        },
+        build: handler.build,
+      };
+    return undefined;
   };
 
 const keyValue = (context: Accumulator, key: string): Handler => {
@@ -21,7 +35,7 @@ const handlers: Record<string, AccumulatedHandler> = {
     let value: Type;
     return {
       append: (atom) => {
-        if (binding) value = context.declares.get(atom) || atom;
+        if (binding) value = atom;
         else binding = atom;
       },
       build: () => {
@@ -34,7 +48,7 @@ const handlers: Record<string, AccumulatedHandler> = {
     let value: any;
     return {
       append: (atom) => {
-        if (binding) value = context.variables.get(atom) || atom;
+        if (binding) value = atom;
         else binding = atom;
       },
       build: () => {
@@ -45,7 +59,7 @@ const handlers: Record<string, AccumulatedHandler> = {
   KqpTxResultBinding(context) {
     let value: Type;
     return {
-      append: (atom) => !value && (value = context.variables.get(atom) || atom),
+      append: (atom) => !value && (value = atom),
       build: () => context.results.push(value),
     };
   },
@@ -56,29 +70,29 @@ const handlers: Record<string, AccumulatedHandler> = {
       build: () => struct,
     };
   },
-  OptionalType(context) {
+  OptionalType() {
     let item: Type;
     return {
-      append: (atom) => (item = context.variables.get(atom) || atom),
+      append: (atom) => (item = atom),
       build: () => ({
         type: "Optional",
         item,
       }),
     };
   },
-  DataType(context) {
+  DataType() {
     let type: Type;
     return {
-      append: (atom) => (type = context.variables.get(atom) || atom),
+      append: (atom) => (type = atom),
       build: () => ({
         type,
       }),
     };
   },
-  ListType(context) {
+  ListType() {
     const list: Type[] = [];
     return {
-      append: (atom) => list.push(context.variables.get(atom) || atom),
+      append: (atom) => list.push(atom),
       build: () => ({
         type: "List",
         items: list,
