@@ -28,10 +28,10 @@ const getHandler =
   };
 
 const keyValue = (key: string): Handler => {
-  let value: any;
+  let value: Type;
 
   return {
-    append: (symbol) => {
+    append: (symbol: Type) => {
       value = symbol;
     },
     build: () => ({ key, value }),
