@@ -15,11 +15,8 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
   stackedParse(queryAst, getHandler(accumulator));
   console.log(accumulator.declares);
   console.log(accumulator.resultSets);
-  for (const [key, value] of accumulator.declares) {
-    console.log(value);
-  }
+  // const interfaceBuilder = createInterface(name);
   console.log(queryAst);
-  // console.log(queryAst.match(/\(KqpTxResultBinding.*\)/)?.[0]);
 };
 
 export default extractOutput;

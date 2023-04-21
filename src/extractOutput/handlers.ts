@@ -18,7 +18,7 @@ const getHandler =
           ) {
             value = context.variables.get(value);
           }
-          handler.append(value);
+          handler.append(value as any);
         },
         build: handler.build,
       };
@@ -27,60 +27,62 @@ const getHandler =
     return undefined;
   };
 
-const keyValue = (key: string): Handler => {
-  let value: Type;
+const keyValue = (name: string): Handler<Ydb.IType, Ydb.IStructMember> => {
+  let type: Ydb.IType;
 
   return {
-    append: (symbol: Type) => {
-      value = symbol;
+    append: (symbol) => {
+      type = symbol;
     },
-    build: () => ({ key, value }),
+    build: () => Ydb.StructMember.create({ name, type }),
   };
 };
 
-const containerTypeHandlers: Partial<
-  Record<Capitalize<ContainerTypes>, AccumulatedHandler>
-> = {
-  StructType(): Handler<Entry, Type> {
-    const entries: Record<string, Type> = {};
+const containerTypeHandlers: Partial<ContainerTypeHandlers> = {
+  StructType() {
+    const members: Ydb.IStructMember[] = [];
     return {
-      append: ({ key, value }) => (entries[key] = value),
-      build: () => ({
-        type: "structType",
-        entries,
-      }),
+      append: (member: Ydb.StructMember) => members.push(member),
+      build: () =>
+        Ydb.Type.create({
+          structType: Ydb.StructType.create({
+            members,
+          }),
+        }),
     };
   },
-  OptionalType: (): Handler<Type, Type> => {
-    let optionalType: Type;
+  OptionalType: () => {
+    let item: Ydb.IType;
 
     return {
-      append: (symbol) => (optionalType = symbol),
-      build: () => ({
-        type: "optionalType",
-        item: optionalType,
-      }),
+      append: (symbol: Ydb.IType) => (item = symbol),
+      build: () =>
+        Ydb.Type.create({
+          optionalType: Ydb.OptionalType.create({
+            item,
+          }),
+        }),
     };
   },
-  ListType: (): Handler<Type, Type> => {
-    const list: Type[] = [];
+  ListType: () => {
+    let item: Ydb.IType;
 
     return {
-      append: (symbol) => {
-        list.push(symbol);
-      },
-      build: () => ({
-        type: "listType",
-        items: list,
-      }),
+      append: (symbol: Ydb.IType) => (item = symbol),
+      build: () =>
+        Ydb.Type.create({
+          listType: Ydb.ListType.create({
+            item,
+          }),
+        }),
     };
   },
 };
 
-const syntaxHandlers: Record<string, AccumulatedHandler> = {
-  declare: (context): Handler<string | Type> => {
+const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
+  declare: (context): Handler<string | Value> => {
     let binding: string;
-    let dataType: Type;
+    let dataType: Value;
 
     return {
       append: (symbol) => {
@@ -128,16 +130,18 @@ const syntaxHandlers: Record<string, AccumulatedHandler> = {
       },
     };
   },
-  DataType: (): Handler<string> => {
-    let dataType: string;
+  DataType: (): Handler<string, Ydb.Type> => {
+    let dataType: keyof typeof Ydb.Type.PrimitiveTypeId;
 
     return {
       append: (symbol) => {
-        dataType = symbol;
+        dataType =
+          symbol.toUpperCase() as keyof typeof Ydb.Type.PrimitiveTypeId;
       },
-      build: () => ({
-        type: dataType,
-      }),
+      build: () =>
+        Ydb.Type.create({
+          typeId: Ydb.Type.PrimitiveTypeId[dataType],
+        }),
     };
   },
 };
@@ -145,18 +149,28 @@ const syntaxHandlers: Record<string, AccumulatedHandler> = {
 const handlers = { ...containerTypeHandlers, ...syntaxHandlers };
 
 export type Accumulator = {
-  declares: Map<string, Type>;
-  variables: Map<string, Type>;
+  declares: Map<string, Value>;
+  variables: Map<string, Value>;
   resultSets: Type[];
 };
 
-type Type = {
+export type Type = {
   type: ContainerTypes;
 };
 
-type Entry = { key: string; value: Type };
+type AccumulatedHandler<Entry, Result> = (
+  accumulator: Accumulator
+) => Handler<Entry, Result>;
 
-type AccumulatedHandler = (accumulator: Accumulator) => Handler;
 type ContainerTypes = keyof Omit<Ydb.IType, "typeId" | "pgType">;
+
+type ContainerTypeHandlers = {
+  [K in Capitalize<ContainerTypes>]: AccumulatedHandler<
+    unknown,
+    Ydb.IType //NonNullable<Ydb.IType[Uncapitalize<K>]>
+  >;
+};
+
+type Value = ContainerTypeHandlers[keyof ContainerTypeHandlers];
 
 export default getHandler;
