@@ -12,7 +12,7 @@ const getHandler =
         append: (value: unknown) => {
           if (
             typeof value === "string" &&
-            value.startsWith("&") &&
+            value.startsWith("$") &&
             context.variables.has(value)
           ) {
             value = context.variables.get(value);
