@@ -46,7 +46,7 @@ const containerTypeHandlers: Partial<
     return {
       append: ({ key, value }) => (entries[key] = value),
       build: () => ({
-        type: "StructType",
+        type: "structType",
         entries,
       }),
     };
@@ -57,7 +57,7 @@ const containerTypeHandlers: Partial<
     return {
       append: (symbol) => (optionalType = symbol),
       build: () => ({
-        type: "Optional",
+        type: "optionalType",
         item: optionalType,
       }),
     };
@@ -70,7 +70,7 @@ const containerTypeHandlers: Partial<
         list.push(symbol);
       },
       build: () => ({
-        type: "List",
+        type: "listType",
         items: list,
       }),
     };
@@ -151,7 +151,7 @@ export type Accumulator = {
 };
 
 type Type = {
-  type: string;
+  type: ContainerTypes;
 };
 
 type Entry = { key: string; value: Type };

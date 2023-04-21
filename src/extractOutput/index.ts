@@ -4,10 +4,8 @@ import getHandler, { Accumulator } from "./handlers";
 import stackedParse from "./stacks";
 
 const extractOutput = async (name: string, sql: string, driver: Driver) => {
-  const { queryAst, queryPlan } = await driver.tableClient.withSession(
-    (session) => {
-      return session.explainQuery(sql);
-    }
+  const { queryAst } = await driver.tableClient.withSession((session) =>
+    session.explainQuery(sql)
   );
   const accumulator: Accumulator = {
     declares: new Map(),
@@ -17,6 +15,9 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
   stackedParse(queryAst, getHandler(accumulator));
   console.log(accumulator.declares);
   console.log(accumulator.resultSets);
+  for (const [key, value] of accumulator.declares) {
+    console.log(value);
+  }
   console.log(queryAst);
   // console.log(queryAst.match(/\(KqpTxResultBinding.*\)/)?.[0]);
 };
