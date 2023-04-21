@@ -89,6 +89,7 @@ const syntaxHandlers: Record<string, AccumulatedHandler> = {
       },
       build: () => {
         if (binding && dataType) {
+          context.variables.set(binding, dataType);
           context.declares.set(binding, dataType);
         }
       },
@@ -123,7 +124,7 @@ const syntaxHandlers: Record<string, AccumulatedHandler> = {
         }
       },
       build: () => {
-        context.results.push(dataType);
+        context.resultSets.push(dataType);
       },
     };
   },
@@ -146,7 +147,7 @@ const handlers = { ...containerTypeHandlers, ...syntaxHandlers };
 export type Accumulator = {
   declares: Map<string, Type>;
   variables: Map<string, Type>;
-  results: any[];
+  resultSets: Type[];
 };
 
 type Type = {
