@@ -1,3 +1,4 @@
+import { Ydb } from "ydb-sdk";
 import { GetHandler, Handler } from "./stacks";
 
 const getHandler =
@@ -5,7 +6,7 @@ const getHandler =
   (symbol) => {
     const handler = symbol.startsWith('"')
       ? keyValue(symbol)
-      : handlers[symbol]?.(context);
+      : handlers[symbol as keyof typeof handlers]?.(context);
 
     if (handler) {
       return {
@@ -37,18 +38,54 @@ const keyValue = (key: string): Handler => {
   };
 };
 
-const handlers: Record<string, (context: Accumulator) => Handler> = {
-  declare: (context) => {
+const containerTypeHandlers: Partial<
+  Record<Capitalize<ContainerTypes>, AccumulatedHandler>
+> = {
+  StructType(): Handler<Entry, Type> {
+    const entries: Record<string, Type> = {};
+    return {
+      append: ({ key, value }) => (entries[key] = value),
+      build: () => ({
+        type: "StructType",
+        entries,
+      }),
+    };
+  },
+  OptionalType: (): Handler<Type, Type> => {
+    let optionalType: Type;
+
+    return {
+      append: (symbol) => (optionalType = symbol),
+      build: () => ({
+        type: "Optional",
+        item: optionalType,
+      }),
+    };
+  },
+  ListType: (): Handler<Type, Type> => {
+    const list: Type[] = [];
+
+    return {
+      append: (symbol) => {
+        list.push(symbol);
+      },
+      build: () => ({
+        type: "List",
+        items: list,
+      }),
+    };
+  },
+};
+
+const syntaxHandlers: Record<string, AccumulatedHandler> = {
+  declare: (context): Handler<string | Type> => {
     let binding: string;
     let dataType: Type;
 
     return {
       append: (symbol) => {
-        if (binding) {
-          dataType = symbol;
-        } else {
-          binding = symbol;
-        }
+        if (typeof symbol === "string") binding = symbol;
+        else dataType = symbol;
       },
       build: () => {
         if (binding && dataType) {
@@ -57,7 +94,7 @@ const handlers: Record<string, (context: Accumulator) => Handler> = {
       },
     };
   },
-  let: (context) => {
+  let: (context): Handler<string | any> => {
     let binding: string;
     let value: any;
 
@@ -76,7 +113,7 @@ const handlers: Record<string, (context: Accumulator) => Handler> = {
       },
     };
   },
-  KqpTxResultBinding: (context) => {
+  KqpTxResultBinding: (context): Handler<Type> => {
     let dataType: Type;
 
     return {
@@ -90,31 +127,8 @@ const handlers: Record<string, (context: Accumulator) => Handler> = {
       },
     };
   },
-  StructType: () => {
-    const struct: Record<string, Type> = {};
-
-    return {
-      append: ({ key, value }: { key: string; value: Type }) => {
-        struct[key] = value;
-      },
-      build: () => struct,
-    };
-  },
-  OptionalType: () => {
-    let optionalType: Type;
-
-    return {
-      append: (symbol) => {
-        optionalType = symbol;
-      },
-      build: () => ({
-        type: "Optional",
-        item: optionalType,
-      }),
-    };
-  },
-  DataType: () => {
-    let dataType: Type;
+  DataType: (): Handler<string> => {
+    let dataType: string;
 
     return {
       append: (symbol) => {
@@ -125,20 +139,9 @@ const handlers: Record<string, (context: Accumulator) => Handler> = {
       }),
     };
   },
-  ListType: () => {
-    const list: Type[] = [];
-
-    return {
-      append: (symbol) => {
-        list.push(symbol);
-      },
-      build: () => ({
-        type: "List",
-        items: list,
-      }),
-    };
-  },
 };
+
+const handlers = { ...containerTypeHandlers, ...syntaxHandlers };
 
 export type Accumulator = {
   declares: Map<string, Type>;
@@ -148,9 +151,11 @@ export type Accumulator = {
 
 type Type = {
   type: string;
-  kind: "Primitive" | "Container";
 };
 
+type Entry = { key: string; value: Type };
+
 type AccumulatedHandler = (accumulator: Accumulator) => Handler;
+type ContainerTypes = keyof Omit<Ydb.IType, "typeId" | "pgType">;
 
 export default getHandler;
