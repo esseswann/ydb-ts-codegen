@@ -4,7 +4,7 @@ const getHandler =
   (context: Accumulator): GetHandler =>
   (symbol) => {
     const handler = symbol.startsWith('"')
-      ? keyValue(context, symbol)
+      ? keyValue(symbol)
       : handlers[symbol]?.(context);
 
     if (handler) {
@@ -26,7 +26,7 @@ const getHandler =
     return undefined;
   };
 
-const keyValue = (context: Accumulator, key: string): Handler => {
+const keyValue = (key: string): Handler => {
   let value: any;
 
   return {
