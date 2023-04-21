@@ -80,9 +80,9 @@ const containerTypeHandlers: Partial<ContainerTypeHandlers> = {
 };
 
 const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
-  declare: (context): Handler<string | Value> => {
+  declare: (context): Handler<string | Ydb.Type> => {
     let binding: string;
-    let dataType: Value;
+    let dataType: Ydb.Type;
 
     return {
       append: (symbol) => {
@@ -116,11 +116,11 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
       },
     };
   },
-  KqpTxResultBinding: (context): Handler<Type> => {
-    let dataType: Type;
+  KqpTxResultBinding: (context) => {
+    let dataType: Ydb.Type;
 
     return {
-      append: (symbol) => {
+      append: (symbol: Ydb.Type) => {
         if (!dataType) {
           dataType = symbol;
         }
@@ -149,13 +149,9 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
 const handlers = { ...containerTypeHandlers, ...syntaxHandlers };
 
 export type Accumulator = {
-  declares: Map<string, Value>;
-  variables: Map<string, Value>;
-  resultSets: Type[];
-};
-
-export type Type = {
-  type: ContainerTypes;
+  declares: Map<string, Ydb.Type>;
+  variables: Map<string, Ydb.Type>;
+  resultSets: Ydb.Type[];
 };
 
 type AccumulatedHandler<Entry, Result> = (
@@ -170,7 +166,5 @@ type ContainerTypeHandlers = {
     Ydb.IType //NonNullable<Ydb.IType[Uncapitalize<K>]>
   >;
 };
-
-type Value = ContainerTypeHandlers[keyof ContainerTypeHandlers];
 
 export default getHandler;
