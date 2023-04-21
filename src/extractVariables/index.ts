@@ -22,8 +22,8 @@ const extractVariables = async (
     convertFunction.append(key, element);
   }
   return {
-    interface: interfaceType.get(),
-    converter: convertFunction.get(),
+    interface: interfaceType.build(),
+    converter: convertFunction.build(),
   };
 };
 

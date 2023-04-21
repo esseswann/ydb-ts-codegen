@@ -7,7 +7,7 @@ const createInterface = (name: string) => {
   return {
     append: (key: string, value: Ydb.IType) =>
       properties.push(getType(key, value)),
-    get: () =>
+    build: () =>
       factory.createInterfaceDeclaration(
         [factory.createToken(SyntaxKind.ExportKeyword)],
         name,

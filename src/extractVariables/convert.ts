@@ -7,7 +7,7 @@ const createConvert = (name: string) => {
   return {
     append: (key: string, value: Ydb.IType) =>
       properties.push(getType(key, value)),
-    get: () => {
+    build: () => {
       const object = factory.createObjectLiteralExpression(properties, true);
       return factory.createFunctionDeclaration(
         undefined,
