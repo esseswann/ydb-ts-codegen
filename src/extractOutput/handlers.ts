@@ -3,96 +3,135 @@ import { GetHandler, Handler } from "./stacks";
 const getHandler =
   (context: Accumulator): GetHandler =>
   (symbol) => {
-    if (symbol.startsWith('"')) return keyValue(context, symbol);
-    const handler = handlers[symbol]?.(context);
-    if (handler)
+    const handler = symbol.startsWith('"')
+      ? keyValue(context, symbol)
+      : handlers[symbol]?.(context);
+
+    if (handler) {
       return {
-        append: (atom: unknown) => {
+        append: (value: unknown) => {
           if (
-            typeof atom === "string" &&
-            atom.startsWith("&") &&
-            context.variables.has(atom)
-          )
-            atom = context.variables.get(atom);
-          handler.append(atom);
+            typeof value === "string" &&
+            value.startsWith("&") &&
+            context.variables.has(value)
+          ) {
+            value = context.variables.get(value);
+          }
+          handler.append(value);
         },
         build: handler.build,
       };
+    }
+
     return undefined;
   };
 
 const keyValue = (context: Accumulator, key: string): Handler => {
   let value: any;
+
   return {
-    append: (atom) => (value = context.variables.get(atom) || atom),
+    append: (symbol) => {
+      value = symbol;
+    },
     build: () => ({ key, value }),
   };
 };
 
-const handlers: Record<string, AccumulatedHandler> = {
-  declare(context) {
+const handlers: Record<string, (context: Accumulator) => Handler> = {
+  declare: (context) => {
     let binding: string;
-    let value: Type;
+    let dataType: Type;
+
     return {
-      append: (atom) => {
-        if (binding) value = atom;
-        else binding = atom;
+      append: (symbol) => {
+        if (binding) {
+          dataType = symbol;
+        } else {
+          binding = symbol;
+        }
       },
       build: () => {
-        if (binding && value) context.declares.set(binding, value);
+        if (binding && dataType) {
+          context.declares.set(binding, dataType);
+        }
       },
     };
   },
-  let(context) {
+  let: (context) => {
     let binding: string;
     let value: any;
+
     return {
-      append: (atom) => {
-        if (binding) value = atom;
-        else binding = atom;
+      append: (symbol) => {
+        if (binding) {
+          value = symbol;
+        } else {
+          binding = symbol;
+        }
       },
       build: () => {
-        if (binding && value) context.variables.set(binding, value);
+        if (binding && value) {
+          context.variables.set(binding, value);
+        }
       },
     };
   },
-  KqpTxResultBinding(context) {
-    let value: Type;
+  KqpTxResultBinding: (context) => {
+    let dataType: Type;
+
     return {
-      append: (atom) => !value && (value = atom),
-      build: () => context.results.push(value),
+      append: (symbol) => {
+        if (!dataType) {
+          dataType = symbol;
+        }
+      },
+      build: () => {
+        context.results.push(dataType);
+      },
     };
   },
-  StructType() {
+  StructType: () => {
     const struct: Record<string, Type> = {};
+
     return {
-      append: ({ key, value }) => (struct[key] = value),
+      append: ({ key, value }: { key: string; value: Type }) => {
+        struct[key] = value;
+      },
       build: () => struct,
     };
   },
-  OptionalType() {
-    let item: Type;
+  OptionalType: () => {
+    let optionalType: Type;
+
     return {
-      append: (atom) => (item = atom),
+      append: (symbol) => {
+        optionalType = symbol;
+      },
       build: () => ({
         type: "Optional",
-        item,
+        item: optionalType,
       }),
     };
   },
-  DataType() {
-    let type: Type;
+  DataType: () => {
+    let dataType: Type;
+
     return {
-      append: (atom) => (type = atom),
+      append: (symbol) => {
+        dataType = symbol;
+      },
       build: () => ({
-        type,
+        type: dataType,
       }),
     };
   },
-  ListType() {
+  ListType: () => {
     const list: Type[] = [];
+
     return {
-      append: (atom) => list.push(atom),
+      append: (symbol) => {
+        list.push(symbol);
+      },
       build: () => ({
         type: "List",
         items: list,
