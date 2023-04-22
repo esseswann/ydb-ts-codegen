@@ -1,8 +1,8 @@
 // @ts-ignore
 import { Driver, Ydb } from "ydb-sdk";
-import createConvert from "../extractVariables/convert";
-import createInterface from "../extractVariables/interface";
 import { capitalizeFirstLetter } from "../utils";
+import createConvert from "./convert/convert";
+import createInterface from "./convert/interface";
 import getHandler, { Accumulator } from "./handlers";
 import stackedParse from "./stacks";
 
@@ -19,7 +19,7 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
 };
 
 const getInputDefinitions = (name: string, input: Record<string, Ydb.Type>) => {
-  const preparedName = capitalizeFirstLetter(name);
+  const preparedName = capitalizeFirstLetter(`${name}Variables`);
   const interfaceType = createInterface(preparedName);
   const convertFunction = createConvert(preparedName);
   for (const key in input) {
@@ -45,5 +45,7 @@ const extractTypes = (queryAst: string) => {
     outputs: accumulator.resultSets,
   };
 };
+
+export type IO = Awaited<ReturnType<typeof extractOutput>>;
 
 export default extractOutput;

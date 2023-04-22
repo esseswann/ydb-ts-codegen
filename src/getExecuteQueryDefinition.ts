@@ -6,7 +6,7 @@ import {
   SyntaxKind,
 } from "typescript";
 import { Driver, Session, withRetries } from "ydb-sdk";
-import { Variables } from "./extractVariables";
+import { IO } from "./extractIo";
 import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
 
 const DRIVER_NAME = "driver";
@@ -20,7 +20,7 @@ const QUERY_OPTIONS_NAME = "queryOptions";
 const getExecuteQueryDefinition = (
   name: string,
   sql: string,
-  variables: Variables | null
+  variables: IO["input"] | null
 ) => {
   const functionName = factory.createIdentifier(
     `execute${capitalizeFirstLetter(name)}`
