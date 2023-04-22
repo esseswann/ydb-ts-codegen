@@ -1,13 +1,18 @@
-import {
+import ts, {
   CallExpression,
   factory,
   ParameterDeclaration,
   Statement,
   SyntaxKind,
 } from "typescript";
-import { Driver, Session, withRetries } from "ydb-sdk";
+import { Driver, Session, TypedData, withRetries } from "ydb-sdk";
 import { IO } from "./extractIo";
-import { capitalizeFirstLetter, getConst, getFunctionCall } from "./utils";
+import {
+  capitalizeFirstLetter,
+  getAwaitFunctionCall,
+  getConst,
+  getFunctionCall,
+} from "./utils";
 
 const DRIVER_NAME = "driver";
 const SESSION_NAME = "session";
@@ -16,11 +21,12 @@ const PAYLOAD_NAME = "payload";
 const RESULT_NAME = "result";
 const SQL_NAME = "sql";
 const QUERY_OPTIONS_NAME = "queryOptions";
+const RESPONSE_NAME = "response";
 
 const getExecuteQueryDefinition = (
   name: string,
   sql: string,
-  variables: IO["input"] | null
+  variables: IO
 ) => {
   const functionName = factory.createIdentifier(
     `execute${capitalizeFirstLetter(name)}`
@@ -35,13 +41,13 @@ const getExecuteQueryDefinition = (
   );
   parameters.push(driverParmater);
   const statements: Statement[] = [];
-  if (variables) {
+  if (variables?.input) {
     const parameter = factory.createParameterDeclaration(
       undefined,
       undefined,
       factory.createIdentifier(VARIABLES_NAME),
       undefined,
-      factory.createTypeReferenceNode(variables.interface.name)
+      factory.createTypeReferenceNode(variables.input.interface.name)
     );
     parameters.push(parameter);
   }
@@ -64,8 +70,10 @@ const getExecuteQueryDefinition = (
       )
     )
   );
-  if (variables)
-    statements.push(getVariablesStatement(variables.converter.name!.text));
+  if (variables?.input.interface)
+    statements.push(
+      getVariablesStatement(variables?.input.converter.name!.text)
+    );
   else
     statements.push(
       getConst(PAYLOAD_NAME, factory.createIdentifier("undefined"))
@@ -75,10 +83,19 @@ const getExecuteQueryDefinition = (
   statements.push(getSessionHandler());
   statements.push(
     getConst(
-      RESULT_NAME,
-      getFunctionCall(`${DRIVER_NAME}.tableClient.withSession`, [
+      RESPONSE_NAME,
+      getAwaitFunctionCall(`${DRIVER_NAME}.tableClient.withSession`, [
         sessionHandler.name!.text,
       ])
+    )
+  );
+  statements.push(
+    getConst(
+      RESULT_NAME,
+      factory.createObjectLiteralExpression(
+        variables.outputs.map(handleOutput),
+        true
+      )
     )
   );
   statements.push(
@@ -86,7 +103,7 @@ const getExecuteQueryDefinition = (
   );
   const block = factory.createBlock(statements, true);
   return factory.createFunctionDeclaration(
-    undefined,
+    [factory.createToken(SyntaxKind.AsyncKeyword)],
     undefined,
     functionName,
     undefined,
@@ -94,6 +111,36 @@ const getExecuteQueryDefinition = (
     undefined,
     block
   );
+};
+
+const handleOutput = (output: ts.InterfaceDeclaration, index: number) => {
+  const createNativeObjects = factory.createPropertyAccessExpression(
+    factory.createIdentifier(TypedData.name),
+    factory.createIdentifier(TypedData.createNativeObjects.name)
+  );
+
+  const resultSetsIndex = factory.createElementAccessExpression(
+    factory.createPropertyAccessExpression(
+      factory.createIdentifier(RESPONSE_NAME),
+      factory.createIdentifier("resultSets")
+    ),
+    factory.createNumericLiteral(index)
+  );
+
+  const asUnknown = factory.createAsExpression(
+    factory.createCallExpression(createNativeObjects, undefined, [
+      resultSetsIndex,
+    ]),
+    factory.createKeywordTypeNode(SyntaxKind.UnknownKeyword)
+  );
+
+  const asType = factory.createAsExpression(
+    asUnknown,
+    factory.createTypeReferenceNode(output.name)
+  );
+
+  const result = factory.createPropertyAssignment(output.name, asType);
+  return result;
 };
 
 const getVariablesStatement = (converterName: string) => {

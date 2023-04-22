@@ -40,7 +40,7 @@ const getOptionalType = (
   return [questionToken, type];
 };
 
-const getTypeValue = (type: Ydb.IType) =>
+export const getTypeValue = (type: Ydb.IType) =>
   type.typeId
     ? factory.createTypeReferenceNode(primitiveTypes[type.typeId].native)
     : getContainerType(type);

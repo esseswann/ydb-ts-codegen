@@ -11,15 +11,17 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
     session.explainQuery(sql)
   );
   const result = extractTypes(queryAst);
-  const input = getInputDefinitions(name, result.input);
+  const preparedName = capitalizeFirstLetter(name);
+  const input = getInputDefinitions(preparedName, result.input);
+  const outputs = getOutputsDefinitions(preparedName, result.outputs);
   return {
     input,
-    outputs: [],
+    outputs,
   };
 };
 
 const getInputDefinitions = (name: string, input: Record<string, Ydb.Type>) => {
-  const preparedName = capitalizeFirstLetter(`${name}Variables`);
+  const preparedName = `${name}Variables`;
   const interfaceType = createInterface(preparedName);
   const convertFunction = createConvert(preparedName);
   for (const key in input) {
@@ -31,6 +33,25 @@ const getInputDefinitions = (name: string, input: Record<string, Ydb.Type>) => {
     interface: interfaceType.build(),
     converter: convertFunction.build(),
   };
+};
+
+const getOutputsDefinitions = (name: string, outputs: Ydb.Type[]) => {
+  const result = [];
+  for (let index = 0; index < outputs.length; index++)
+    result.push(
+      getOutputDefinition(
+        `${name}Result${index}`,
+        outputs[index].listType!.item!.structType!
+      )
+    );
+  return result;
+};
+
+const getOutputDefinition = (name: string, output: Ydb.IStructType) => {
+  const interfaceType = createInterface(name);
+  for (const { name, type } of output.members!)
+    interfaceType.append(name!, type!);
+  return interfaceType.build();
 };
 
 const extractTypes = (queryAst: string) => {
