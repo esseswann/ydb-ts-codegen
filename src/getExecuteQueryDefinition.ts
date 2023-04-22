@@ -136,7 +136,7 @@ const handleOutput = (output: ts.InterfaceDeclaration, index: number) => {
 
   const asType = factory.createAsExpression(
     asUnknown,
-    factory.createTypeReferenceNode(output.name)
+    factory.createArrayTypeNode(factory.createTypeReferenceNode(output.name))
   );
 
   const result = factory.createPropertyAssignment(output.name, asType);
