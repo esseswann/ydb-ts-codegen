@@ -14,9 +14,9 @@ const getHandler =
           if (
             typeof value === "string" &&
             value.startsWith("$") &&
-            context.variables.has(value)
+            context.variables[value]
           ) {
-            value = context.variables.get(value);
+            value = context.variables[value];
           }
           handler.append(value as any);
         },
@@ -91,8 +91,8 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
       },
       build: () => {
         if (binding && dataType) {
-          context.variables.set(binding, dataType);
-          context.declares.set(binding, dataType);
+          context.variables[binding] = dataType;
+          context.declares[binding] = dataType;
         }
       },
     };
@@ -111,7 +111,7 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
       },
       build: () => {
         if (binding && value) {
-          context.variables.set(binding, value);
+          context.variables[binding] = value;
         }
       },
     };
@@ -149,8 +149,8 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
 const handlers = { ...containerTypeHandlers, ...syntaxHandlers };
 
 export type Accumulator = {
-  declares: Map<string, Ydb.Type>;
-  variables: Map<string, Ydb.Type>;
+  declares: Record<string, Ydb.Type>;
+  variables: Record<string, Ydb.Type>;
   resultSets: Ydb.Type[];
 };
 
