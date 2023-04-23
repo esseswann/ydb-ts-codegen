@@ -12,7 +12,9 @@ const extractOutput = async (name: string, sql: string, driver: Driver) => {
   );
   const result = extractTypes(queryAst);
   const preparedName = capitalizeFirstLetter(name);
-  const input = getInputDefinitions(preparedName, result.input);
+  const input = Object.keys(result.input).length
+    ? getInputDefinitions(preparedName, result.input)
+    : null;
   const outputs = getOutputsDefinitions(preparedName, result.outputs);
   return {
     input,

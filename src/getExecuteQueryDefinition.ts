@@ -70,7 +70,7 @@ const getExecuteQueryDefinition = (
       )
     )
   );
-  if (variables?.input.interface)
+  if (variables.input?.interface)
     statements.push(
       getVariablesStatement(variables?.input.converter.name!.text)
     );
