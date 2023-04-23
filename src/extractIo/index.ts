@@ -39,13 +39,12 @@ const getInputDefinitions = (name: string, input: Record<string, Ydb.Type>) => {
 
 const getOutputsDefinitions = (name: string, outputs: Ydb.Type[]) => {
   const result = [];
-  for (let index = 0; index < outputs.length; index++)
-    result.push(
-      getOutputDefinition(
-        `${name}Result${index}`,
-        outputs[index].listType!.item!.structType!
-      )
-    );
+  for (let index = 0; index < outputs.length; index++) {
+    // FIXME
+    const structType = outputs[index].listType?.item?.structType;
+    if (structType)
+      result.push(getOutputDefinition(`${name}Result${index}`, structType));
+  }
   return result;
 };
 
