@@ -14,6 +14,10 @@ export function getFunctionCall(name: string, args: string[]) {
   return handler;
 }
 
+export function getAwaitFunctionCall(name: string, args: string[]) {
+  return factory.createAwaitExpression(getFunctionCall(name, args));
+}
+
 export const getConst = (left: string, right: Expression) =>
   factory.createVariableStatement(
     undefined,

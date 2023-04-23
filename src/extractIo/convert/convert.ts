@@ -7,7 +7,7 @@ const createConvert = (name: string) => {
   return {
     append: (key: string, value: Ydb.IType) =>
       properties.push(getType(key, value)),
-    get: () => {
+    build: () => {
       const object = factory.createObjectLiteralExpression(properties, true);
       return factory.createFunctionDeclaration(
         undefined,
@@ -42,7 +42,7 @@ const getType = (key: string, type: Ydb.IType): ts.PropertyAssignment => {
   );
 };
 
-const getTypedValueCall = (
+export const getTypedValueCall = (
   variant: Variant,
   type: Ydb.IType,
   argument: ts.PropertyAccessExpression
@@ -122,7 +122,7 @@ const getPrimitivePropertyAccess = (
 ): ts.PropertyAccessExpression =>
   getPropertyAccess(variant, primitiveTypes[type.typeId!][variant]);
 
-const getPropertyAccess = (variant: Variant, method: string) => {
+export const getPropertyAccess = (variant: Variant, method: string) => {
   const identifier =
     variant === Variant.TypedValue ? TypedValues.name : Types.name;
   return factory.createPropertyAccessExpression(
@@ -131,7 +131,7 @@ const getPropertyAccess = (variant: Variant, method: string) => {
   );
 };
 
-enum Variant {
+export enum Variant {
   TypedValue = "typedValue",
   Type = "type",
 }

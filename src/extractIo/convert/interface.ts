@@ -2,12 +2,12 @@ import ts, { factory, QuestionToken, SyntaxKind } from "typescript";
 import { snakeToCamelCaseConversion, Ydb } from "ydb-sdk";
 import primitiveTypes from "./primitiveTypes";
 
-const createInterface = (name: string) => {
+const createInterface = (name: string, convert = true) => {
   const properties: ts.PropertySignature[] = [];
   return {
     append: (key: string, value: Ydb.IType) =>
-      properties.push(getType(key, value)),
-    get: () =>
+      properties.push(getType(key, value, convert)),
+    build: () =>
       factory.createInterfaceDeclaration(
         [factory.createToken(SyntaxKind.ExportKeyword)],
         name,
@@ -40,7 +40,7 @@ const getOptionalType = (
   return [questionToken, type];
 };
 
-const getTypeValue = (type: Ydb.IType) =>
+export const getTypeValue = (type: Ydb.IType) =>
   type.typeId
     ? factory.createTypeReferenceNode(primitiveTypes[type.typeId].native)
     : getContainerType(type);

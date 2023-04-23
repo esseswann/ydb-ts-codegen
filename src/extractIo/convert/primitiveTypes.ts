@@ -39,12 +39,12 @@ const primitiveTypes: PrimitiveTypes = {
   [Ydb.Type.PrimitiveTypeId.INT64]: {
     typedValue: "int64",
     type: "INT64",
-    native: "number",
+    native: "number | Long",
   },
   [Ydb.Type.PrimitiveTypeId.UINT64]: {
     typedValue: "uint64",
     type: "UINT64",
-    native: "number",
+    native: "number | Long",
   },
   [Ydb.Type.PrimitiveTypeId.FLOAT]: {
     typedValue: "float",
