@@ -11,12 +11,10 @@ const getHandler =
     if (handler) {
       return {
         append: (value: unknown) => {
-          if (
-            typeof value === "string" &&
-            value.startsWith("$") &&
-            context.variables[value]
-          ) {
-            value = context.variables[value];
+          if (typeof value === "string") {
+            const variable =
+              context.variables[value] || context.declares[value];
+            if (variable) value = variable;
           }
           handler.append(value as any);
         },

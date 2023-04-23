@@ -61,8 +61,11 @@ const extractTypes = (queryAst: string) => {
     resultSets: [],
   };
   stackedParse(queryAst, getHandler(accumulator));
+  const input: Accumulator["declares"] = {};
+  for (const key in accumulator.declares)
+    if (key.startsWith("$")) input[key] = accumulator.declares[key];
   return {
-    input: accumulator.declares,
+    input,
     outputs: accumulator.resultSets,
   };
 };

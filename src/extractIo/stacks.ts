@@ -30,6 +30,5 @@ export type Handler<T = unknown, R = unknown> = {
   append(atom: T): void;
   build(): R;
 };
-// export type Handlers = Record<string, GetHandler>;
 
 export default stackedParse;
