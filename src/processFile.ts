@@ -1,5 +1,5 @@
 import { Node, factory } from "typescript";
-import { Driver, TypedData, declareType } from "ydb-sdk";
+import { Driver, TypedData } from "ydb-sdk";
 import getExecuteQueryDefinition from "./getExecuteQueryDefinition";
 import getImports from "./getImports";
 
@@ -7,7 +7,6 @@ import { Session, TypedValues, Types, withRetries } from "ydb-sdk";
 import extractIo from "./extractIo";
 // import getQueryOptions from "./getQueryOptions";
 const IMPORTS = [
-  declareType.name,
   TypedData.name,
   TypedValues.name,
   Types.name,
