@@ -6,50 +6,85 @@ Given a file `complex.sql`
 ```sql
 declare $primitive as Uint64;
 declare $optional_primitive as Optional<Datetime>;
-declare $list as List<Struct<id: Uint64, created_at: Datetime, sublist: List<Optional<Uint64>>>>;
+declare $list as List<Struct<id: Uint64, created_at: Datetime, sublist: List<Struct<paid_for: Optional<Uint64>>>>>;
 
 select * from As_Table($list)
  where id = $primitive
     or created_at = $optional_primitive;
+
+select *
+  from company;
 ```
 
-will generate 
+will generate
 ```typescript
-import { TypedValues, Types, Driver, Session, withRetries } from "ydb-sdk";
+import { TypedData, TypedValues, Types, Driver, Session, withRetries } from "ydb-sdk";
+
+import Long from "long";
 
 export interface ComplexVariables {
-    optionalPrimitive?: Date;
-    primitive: number;
     list: {
-        created_at: Date;
-        id: number;
-        sublist: number[];
+        "created_at": Date;
+        "id": number | Long;
+        "sublist": {
+            "paid_for"?: number | Long;
+        }[];
     }[];
+    optionalPrimitive?: Date;
+    primitive: number | Long;
 }
 
 function prepareComplexVariables(variables: ComplexVariables) {
     return {
-        $optional_primitive: TypedValues.optional(TypedValues.datetime(variables.optionalPrimitive!)),
-        $primitive: TypedValues.uint64(variables.primitive!),
         $list: TypedValues.list(Types.struct({
-            created_at: Types.DATETIME,
-            id: Types.UINT64,
-            sublist: Types.list(Types.optional(Types.UINT64))
-        }), variables.list!)
+            "created_at": Types.DATETIME,
+            "id": Types.UINT64,
+            "sublist": Types.list(Types.struct({
+                "paid_for": Types.optional(Types.UINT64)
+            }))
+        }), variables.list!),
+        $optional_primitive: TypedValues.optional(TypedValues.datetime(variables.optionalPrimitive!)),
+        $primitive: TypedValues.uint64(variables.primitive!)
     };
 }
 
-function executeComplex(driver: Driver, variables: ComplexVariables, queryOptions?: Parameters<Session["executeQuery"]>[2]) {
+export interface ComplexResult0 {
+    "created_at": Date;
+    "id": number | Long;
+    "sublist": {
+        "paid_for"?: number | Long;
+    }[];
+}
+
+export interface ComplexResult1 {
+    "id": number | Long;
+    "name"?: string;
+}
+
+async function executeComplex(driver: Driver, variables: ComplexVariables, queryOptions?: Parameters<Session["executeQuery"]>[2]) {
     const payload = prepareComplexVariables(variables);
-    const sql = "declare $primitive as Uint64;\r\ndeclare $optional_primitive as Optional<Datetime>;\r\ndeclare $list as List<Struct<id: Uint64, created_at: Datetime, sublist: List<Optional<Uint64>>>>;\r\n\r\nselect * from As_Table($list)\r\n where id = $primitive\r\n    or created_at = $optional_primitive;";
+    const sql = "declare $primitive as Uint64;\r\ndeclare $optional_primitive as Optional<Datetime>;\r\ndeclare $list as List<Struct<id: Uint64, created_at: Datetime, sublist: List<Struct<paid_for: Optional<Uint64>>>>>;\r\n\r\nselect * from As_Table($list)\r\n where id = $primitive\r\n    or created_at = $optional_primitive;\r\n\r\nselect *\r\n  from company;";
     async function sessionHandler(session: Session) {
         return withRetries(() => session.executeQuery(sql, payload, queryOptions));
     }
-    const result = driver.tableClient.withSession(sessionHandler);
+    const response = await driver.tableClient.withSession(sessionHandler);
+    const result = {
+        ComplexResult0: TypedData.createNativeObjects(response.resultSets[0]) as unknown as ComplexResult0[],
+        ComplexResult1: TypedData.createNativeObjects(response.resultSets[1]) as unknown as ComplexResult1[]
+    };
     return result;
 }
 
 export default executeComplex;
+```
+
+so you can then use it like this with all the nice typings:
+```typescript
+executeComplex(driver, {
+    list: [{ id: 1, created_at: new Date(), sublist: [] }],
+    primitive: 1,
+}).then(console.log)
+
 ```
 
 ## Usage
