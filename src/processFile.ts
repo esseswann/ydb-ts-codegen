@@ -1,19 +1,12 @@
 import { Node, factory } from "typescript";
-import { Driver, TypedData } from "ydb-sdk";
+import { Driver } from "ydb-sdk";
 import getExecuteQueryDefinition from "./getExecuteQueryDefinition";
 import getImports from "./getImports";
 
-import { Session, TypedValues, Types, withRetries } from "ydb-sdk";
+import { Session, Types, withRetries } from "ydb-sdk";
 import extractIo from "./extractIo";
 // import getQueryOptions from "./getQueryOptions";
-const IMPORTS = [
-  TypedData.name,
-  TypedValues.name,
-  Types.name,
-  Driver.name,
-  Session.name,
-  withRetries.name,
-];
+const IMPORTS = [Types.name, Driver.name, Session.name, withRetries.name];
 
 const processFile = async (name: string, sql: string, driver: Driver) => {
   const comment = factory.createJSDocComment(
