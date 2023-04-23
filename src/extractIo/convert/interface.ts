@@ -2,11 +2,11 @@ import ts, { factory, QuestionToken, SyntaxKind } from "typescript";
 import { snakeToCamelCaseConversion, Ydb } from "ydb-sdk";
 import primitiveTypes from "./primitiveTypes";
 
-const createInterface = (name: string) => {
+const createInterface = (name: string, convert = true) => {
   const properties: ts.PropertySignature[] = [];
   return {
     append: (key: string, value: Ydb.IType) =>
-      properties.push(getType(key, value)),
+      properties.push(getType(key, value, convert)),
     build: () =>
       factory.createInterfaceDeclaration(
         [factory.createToken(SyntaxKind.ExportKeyword)],

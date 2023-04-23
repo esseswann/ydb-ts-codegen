@@ -49,7 +49,7 @@ const getOutputsDefinitions = (name: string, outputs: Ydb.Type[]) => {
 };
 
 const getOutputDefinition = (name: string, output: Ydb.IStructType) => {
-  const interfaceType = createInterface(name);
+  const interfaceType = createInterface(name, false);
   for (const { name, type } of output.members!)
     interfaceType.append(name!, type!);
   return interfaceType.build();
