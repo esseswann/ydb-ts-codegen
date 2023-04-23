@@ -37,6 +37,18 @@ const keyValue = (name: string): Handler<Ydb.IType, Ydb.IStructMember> => {
 };
 
 const containerTypeHandlers: Partial<ContainerTypeHandlers> = {
+  TupleType() {
+    const elements: Ydb.IType[] = [];
+    return {
+      append: (element: Ydb.IType) => elements.push(element),
+      build: () =>
+        Ydb.Type.create({
+          tupleType: Ydb.TupleType.create({
+            elements,
+          }),
+        }),
+    };
+  },
   StructType() {
     const members: Ydb.IStructMember[] = [];
     return {
@@ -116,15 +128,20 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
   },
   KqpTxResultBinding: (context) => {
     let dataType: Ydb.Type;
+    let unknown: string;
+    let position: number;
 
     return {
-      append: (symbol: Ydb.Type) => {
-        if (!dataType) {
+      append: (symbol: Ydb.Type | string) => {
+        if (typeof symbol === "string") {
+          if (!unknown) unknown = symbol;
+          else position = parseInt(symbol);
+        } else if (!dataType) {
           dataType = symbol;
         }
       },
       build: () => {
-        context.resultSets.push(dataType);
+        context.resultSets[position] = dataType;
       },
     };
   },
