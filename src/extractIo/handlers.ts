@@ -3,7 +3,13 @@ import { GetHandler, Handler } from "./stacks";
 
 const getHandler =
   (context: Accumulator): GetHandler =>
-  (symbol) => {
+  (rawSymbol: string) => {
+    const symbol = rawSymbol?.startsWith("$")
+      ? context.variables[rawSymbol] || context.declares[rawSymbol]
+      : rawSymbol;
+
+    if (typeof symbol !== "string") return undefined;
+
     const handler = symbol.startsWith('"')
       ? keyValue(symbol)
       : handlers[symbol as keyof typeof handlers]?.(context);
@@ -164,8 +170,8 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
 const handlers = { ...containerTypeHandlers, ...syntaxHandlers };
 
 export type Accumulator = {
-  declares: Record<string, Ydb.Type>;
-  variables: Record<string, Ydb.Type>;
+  declares: Record<string, Ydb.Type | string>;
+  variables: Record<string, Ydb.Type | string>;
   resultSets: Ydb.Type[];
 };
 

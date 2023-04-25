@@ -62,9 +62,12 @@ const extractTypes = (queryAst: string) => {
     resultSets: [],
   };
   stackedParse(queryAst, getHandler(accumulator));
-  const input: Accumulator["declares"] = {};
+  const input: Record<string, Ydb.Type> = {};
   for (const key in accumulator.declares)
-    if (key.startsWith("$")) input[key] = accumulator.declares[key];
+    if (key.startsWith("$")) {
+      const type = accumulator.declares[key];
+      if (typeof type !== "string") input[key] = type;
+    }
   return {
     input,
     outputs: accumulator.resultSets,
