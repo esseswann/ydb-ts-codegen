@@ -1,6 +1,6 @@
 {
   "name": "ydb-codegen",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "repository": {
     "urL": "git+https://github.com/esseswann/ydb-ts-codegen.git",
     "type": "git"
