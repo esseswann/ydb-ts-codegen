@@ -7,8 +7,11 @@ const stackedParse = (str: string, getHandler: GetHandler) => {
     const handler = stack[stack.length - 1];
     switch (iterator.type) {
       case "start":
-        isInit = true;
-        stack.push(undefined);
+        if (iterator.quoted) stack.push(getHandler(list));
+        else {
+          isInit = true;
+          stack.push(undefined);
+        }
         break;
       case "atom":
         if (handler) handler.append(iterator.value);
@@ -25,10 +28,12 @@ const stackedParse = (str: string, getHandler: GetHandler) => {
   }
 };
 
-export type GetHandler = (atom: string) => Handler | undefined;
+export type GetHandler = (atom: typeof list | string) => Handler | undefined;
 export type Handler<T = unknown, R = unknown> = {
   append(atom: T): void;
   build(): R;
 };
+
+export const list = Symbol("list");
 
 export default stackedParse;

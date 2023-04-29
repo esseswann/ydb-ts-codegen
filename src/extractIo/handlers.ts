@@ -1,18 +1,20 @@
 import { Ydb } from "ydb-sdk";
-import { GetHandler, Handler } from "./stacks";
+import { GetHandler, Handler, list } from "./stacks";
 
 const getHandler =
   (context: Accumulator): GetHandler =>
-  (rawSymbol: string) => {
-    const symbol = rawSymbol?.startsWith("$")
-      ? context.variables[rawSymbol] || context.declares[rawSymbol]
-      : rawSymbol;
+  (rawSymbol: typeof list | string) => {
+    let symbol: string | typeof list = rawSymbol;
 
-    if (typeof symbol !== "string") return undefined;
+    if (typeof rawSymbol === "string" && rawSymbol.startsWith("$")) {
+      const target =
+        context.variables[rawSymbol] || context.declares[rawSymbol];
+      if (typeof target === "string") {
+        symbol = target;
+      }
+    }
 
-    const handler = symbol.startsWith('"')
-      ? keyValue(symbol)
-      : handlers[symbol as keyof typeof handlers]?.(context);
+    const handler = handlers[symbol as keyof typeof handlers]?.(context);
 
     if (handler) {
       return {
@@ -31,17 +33,6 @@ const getHandler =
     return undefined;
   };
 
-const keyValue = (name: string): Handler<Ydb.IType, Ydb.IStructMember> => {
-  let type: Ydb.IType;
-
-  return {
-    append: (symbol) => {
-      type = symbol;
-    },
-    build: () => Ydb.StructMember.create({ name, type }),
-  };
-};
-
 const containerTypeHandlers: Partial<ContainerTypeHandlers> = {
   TupleType() {
     const elements: Ydb.IType[] = [];
@@ -58,7 +49,15 @@ const containerTypeHandlers: Partial<ContainerTypeHandlers> = {
   StructType() {
     const members: Ydb.IStructMember[] = [];
     return {
-      append: (member: Ydb.StructMember) => members.push(member),
+      append: (member: [string, string | Ydb.IType]) => {
+        if (typeof member[1] !== "string")
+          members.push(
+            Ydb.StructMember.create({
+              name: member[0],
+              type: member[1],
+            })
+          );
+      },
       build: () =>
         Ydb.Type.create({
           structType: Ydb.StructType.create({
@@ -132,6 +131,21 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
       },
     };
   },
+
+  // FIXME gotta handle cases like (String 'kek')
+  // Ensure: (context) => {
+  //   const acc: any[] = [];
+  //   return {
+  //     append: (symbol) => {
+  //       console.log(symbol);
+  //       acc.push(symbol);
+  //     },
+  //     build: () => {
+  //       context.errors.push(acc[acc.length - 1]);
+  //     },
+  //   };
+  // },
+
   KqpTxResultBinding: (context) => {
     let dataType: Ydb.Type;
     let unknown: string;
@@ -141,16 +155,29 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
       append: (symbol: Ydb.Type | string) => {
         if (typeof symbol === "string") {
           if (!unknown) unknown = symbol;
-          else position = parseInt(symbol);
+          else position = parseInt(symbol.replace('"', ""));
         } else if (!dataType) {
           dataType = symbol;
         }
       },
+      build: () => dataType,
+    };
+  },
+
+  KqpPhysicalQuery: (context) => {
+    let ephemerealQueries: boolean;
+    let resultSets: Ydb.Type[];
+    return {
+      append: (symbol: Ydb.Type[]) => {
+        if (!ephemerealQueries) ephemerealQueries = true;
+        else if (!resultSets!) resultSets = symbol;
+      },
       build: () => {
-        context.resultSets[position] = dataType;
+        context.resultSets = resultSets;
       },
     };
   },
+
   DataType: (): Handler<string, Ydb.Type> => {
     let dataType: keyof typeof Ydb.Type.PrimitiveTypeId;
 
@@ -167,12 +194,25 @@ const syntaxHandlers: Record<string, AccumulatedHandler<unknown, unknown>> = {
   },
 };
 
-const handlers = { ...containerTypeHandlers, ...syntaxHandlers };
+const listHandler = (): Handler<unknown, unknown[]> => {
+  const list: unknown[] = [];
+  return {
+    append: (atom: unknown) => list.push(atom),
+    build: () => list,
+  };
+};
+
+const handlers = {
+  ...containerTypeHandlers,
+  ...syntaxHandlers,
+  [list]: listHandler,
+};
 
 export type Accumulator = {
   declares: Record<string, Ydb.Type | string>;
   variables: Record<string, Ydb.Type | string>;
   resultSets: Ydb.Type[];
+  // errors: string[];
 };
 
 type AccumulatedHandler<Entry, Result> = (

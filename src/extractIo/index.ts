@@ -60,6 +60,7 @@ const extractTypes = (queryAst: string) => {
     declares: {},
     variables: {},
     resultSets: [],
+    // errors: [],
   };
   stackedParse(queryAst, getHandler(accumulator));
   const input: Record<string, Ydb.Type> = {};
@@ -71,6 +72,7 @@ const extractTypes = (queryAst: string) => {
   return {
     input,
     outputs: accumulator.resultSets,
+    // errors: accumulator.errors,
   };
 };
 
