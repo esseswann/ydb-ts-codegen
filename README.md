@@ -1,6 +1,6 @@
 # ydb-ts-codegen
+[![Node version](https://img.shields.io/npm/v/ydb-codegen.svg?style=flat)](https://www.npmjs.com/package/ydb-codegen) \
 Generates TypeScript queries from sql files.
-
 
 Given a file `complex.sql`
 ```sql
