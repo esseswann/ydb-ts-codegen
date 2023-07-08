@@ -84,7 +84,7 @@ const getExecuteQueryDefinition = (
   statements.push(
     getConst(
       RESPONSE_NAME,
-      getAwaitFunctionCall(`${DRIVER_NAME}.tableClient.withSession`, [
+      getAwaitFunctionCall(`${DRIVER_NAME}.tableClient.withSessionRetry`, [
         sessionHandler.name!.text,
       ])
     )
