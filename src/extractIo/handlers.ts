@@ -53,7 +53,7 @@ const containerTypeHandlers: Partial<ContainerTypeHandlers> = {
         if (typeof member[1] !== "string")
           members.push(
             Ydb.StructMember.create({
-              name: member[0],
+              name: member[0].replace(/"/g, ""),
               type: member[1],
             })
           );
