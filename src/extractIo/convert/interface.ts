@@ -18,14 +18,15 @@ const createInterface = (name: string, convert = true) => {
   };
 };
 
-const getType = (key: string, type: Ydb.IType, convert: boolean = true) =>
-  factory.createPropertySignature(
+const getType = (key: string, type: Ydb.IType, convert: boolean = true) => {
+  // FIXME should be something better
+  if (convert) key = snakeToCamelCaseConversion.ydbToJs(key);
+  return factory.createPropertySignature(
     undefined,
-    convert // FIXME should be something better
-      ? snakeToCamelCaseConversion.ydbToJs(key)
-      : key,
+    factory.createStringLiteral(key),
     ...getOptionalType(type)
   );
+};
 
 const getOptionalType = (
   input: Ydb.IType
