@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Ydb } from "ydb-sdk";
 import getHandler, { Accumulator } from "./handlers";
 import stackedParse from "./stacks";
