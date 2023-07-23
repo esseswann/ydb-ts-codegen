@@ -1,10 +1,8 @@
-// @ts-ignore
 import { Driver, Ydb } from "ydb-sdk";
 import { capitalizeFirstLetter } from "../utils";
 import createConvert from "./convert/convert";
 import createInterface from "./convert/interface";
-import getHandler, { Accumulator } from "./handlers";
-import stackedParse from "./stacks";
+import extractTypes from "./extractTypes";
 
 const extractOutput = async (name: string, sql: string, driver: Driver) => {
   const { queryAst } = await driver.tableClient.withSession((session) =>
@@ -53,27 +51,6 @@ const getOutputDefinition = (name: string, output: Ydb.IStructType) => {
   for (const { name, type } of output.members!)
     interfaceType.append(name!, type!);
   return interfaceType.build();
-};
-
-const extractTypes = (queryAst: string) => {
-  const accumulator: Accumulator = {
-    declares: {},
-    variables: {},
-    resultSets: [],
-    // errors: [],
-  };
-  stackedParse(queryAst, getHandler(accumulator));
-  const input: Record<string, Ydb.Type> = {};
-  for (const key in accumulator.declares)
-    if (key.startsWith("$")) {
-      const type = accumulator.declares[key];
-      if (typeof type !== "string") input[key] = type;
-    }
-  return {
-    input,
-    outputs: accumulator.resultSets,
-    // errors: accumulator.errors,
-  };
 };
 
 export type IO = Awaited<ReturnType<typeof extractOutput>>;
