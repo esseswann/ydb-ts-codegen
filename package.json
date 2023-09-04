@@ -1,6 +1,6 @@
 {
   "name": "ydb-codegen",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "repository": {
     "urL": "git+https://github.com/esseswann/ydb-ts-codegen.git",
     "type": "git"
@@ -21,14 +21,14 @@
   ],
   "dependencies": {
     "tiny-glob": "0.2.9",
-    "typescript": "5.0.4"
+    "typescript": "5.2.2"
   },
   "peerDependencies": {
-    "ydb-sdk": "^4.5"
+    "ydb-sdk": "^5.1.1"
   },
   "devDependencies": {
-    "dotenv": "16.0.3",
-    "nodemon": "2.0.22",
+    "dotenv": "16.3.1",
+    "nodemon": "3.0.1",
     "ts-node": "10.9.1"
   },
   "prettier": {}
