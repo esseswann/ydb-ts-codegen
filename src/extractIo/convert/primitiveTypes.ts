@@ -91,9 +91,10 @@ const primitiveTypes: PrimitiveTypes = {
     type: "INTERVAL",
     native: "string",
   },
+  // FIXME check
   [Ydb.Type.PrimitiveTypeId.STRING]: {
-    typedValue: "string",
-    type: "STRING",
+    typedValue: "utf8",
+    type: "UTF8",
     native: "string",
   },
   [Ydb.Type.PrimitiveTypeId.UTF8]: {
