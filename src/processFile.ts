@@ -2,6 +2,7 @@ import { Node, factory } from "typescript";
 import { Driver, TypedData } from "ydb-sdk";
 import getExecuteQueryDefinition from "./getExecuteQueryDefinition";
 import getImports from "./getImports";
+import emit from "./emit";
 
 import { Session, TypedValues, Types, withRetries } from "ydb-sdk";
 import extractIo from "./extractIo";
@@ -46,7 +47,7 @@ const processFile = async (name: string, sql: string, driver: Driver) => {
       factory.createIdentifier(functionDefintion.name!.text)
     )
   );
-  return result;
+  return emit(result);
 };
 
 export default processFile;

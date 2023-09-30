@@ -1,5 +1,4 @@
 import { Driver, snakeToCamelCaseConversion } from "ydb-sdk";
-import emit from "./emit";
 import processFile from "./processFile";
 
 const processFiles = async (files: File[], driver: Driver) => {
@@ -12,7 +11,7 @@ const processFiles = async (files: File[], driver: Driver) => {
     );
     result.push({
       name: snakeToCamelCaseConversion.ydbToJs(file.name),
-      content: emit(processedFile),
+      content: processedFile,
     });
   }
   return result;
