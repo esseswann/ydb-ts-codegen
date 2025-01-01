@@ -1,6 +1,6 @@
 {
   "name": "ydb-codegen",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "repository": {
     "urL": "git+https://github.com/esseswann/ydb-ts-codegen.git",
     "type": "git"
@@ -24,7 +24,7 @@
     "typescript": "5.7.2"
   },
   "peerDependencies": {
-    "ydb-sdk": "^5.8.0"
+    "ydb-sdk": "^5.3.2"
   },
   "devDependencies": {
     "@types/node": "22.10.3",
