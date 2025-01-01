@@ -24,7 +24,7 @@
     "typescript": "5.7.2"
   },
   "peerDependencies": {
-    "ydb-sdk": "5.8.0"
+    "ydb-sdk": "^5.8.0"
   },
   "devDependencies": {
     "@types/node": "22.10.3",
